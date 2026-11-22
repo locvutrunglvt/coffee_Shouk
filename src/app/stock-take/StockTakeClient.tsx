@@ -1,0 +1,352 @@
+"use client";
+
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { formatMoney } from "@/lib/format";
+import { useT } from "@/components/I18nProvider";
+import type { UserProfile } from "@/lib/auth";
+import type { IngredientRow } from "@/app/inventory/InventoryClient";
+import { CheckCircle2, ClipboardCheck, Plus } from "lucide-react";
+
+export interface StockTakeRow {
+  id: string;
+  take_date: string;
+  status: "draft" | "finalized";
+  total_variance_value: number;
+  note: string;
+  created_at: string;
+}
+
+export interface StockTakeItemRow {
+  id: string;
+  stock_take_id: string;
+  ingredient_id: string;
+  system_stock: number;
+  actual_stock: number;
+  difference: number;
+  unit_cost: number;
+  variance_value: number;
+  reason: string;
+  ingredients: { name: string; base_unit: string } | null;
+}
+
+interface StockTakeClientProps {
+  profile: UserProfile;
+  currencyCode: string;
+  ingredients: IngredientRow[];
+  initialDraft: StockTakeRow | null;
+  initialDraftItems: StockTakeItemRow[];
+  initialHistory: StockTakeRow[];
+}
+
+export function StockTakeClient({
+  profile,
+  currencyCode,
+  ingredients,
+  initialDraft,
+  initialDraftItems,
+  initialHistory,
+}: StockTakeClientProps) {
+  const { t } = useT();
+  const [draft, setDraft] = useState<StockTakeRow | null>(initialDraft);
+  const [items, setItems] = useState<StockTakeItemRow[]>(initialDraftItems);
+  const [history, setHistory] = useState<StockTakeRow[]>(initialHistory);
+  const [busy, setBusy] = useState(false);
+
+  async function handleCreateDraft() {
+    if (ingredients.length === 0) return;
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const { data: created, error } = await supabase
+        .from("stock_takes")
+        .insert({
+          take_date: new Date().toISOString().slice(0, 10),
+          status: "draft",
+          created_by: profile.id,
+        })
+        .select()
+        .single();
+
+      if (error || !created) throw error;
+
+      const itemsPayload = ingredients.map((ing) => ({
+        stock_take_id: created.id,
+        ingredient_id: ing.id,
+        system_stock: Number(ing.current_stock),
+        actual_stock: Number(ing.current_stock),
+        difference: 0,
+        unit_cost: Number(ing.avg_unit_cost),
+        variance_value: 0,
+        reason: "",
+      }));
+
+      const { data: insertedItems } = await supabase
+        .from("stock_take_items")
+        .insert(itemsPayload)
+        .select("*, ingredients(name, base_unit)");
+
+      setDraft(created as StockTakeRow);
+      setItems((insertedItems as unknown as StockTakeItemRow[]) ?? []);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function updateLocalItem(
+    itemId: string,
+    actualVal: string,
+    reasonVal?: string
+  ) {
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.id !== itemId) return it;
+        const actual = Number(actualVal) || 0;
+        const diff = actual - Number(it.system_stock);
+        const val = diff * Number(it.unit_cost);
+        return {
+          ...it,
+          actual_stock: actual,
+          difference: diff,
+          variance_value: val,
+          reason: reasonVal !== undefined ? reasonVal : it.reason,
+        };
+      })
+    );
+  }
+
+  async function handleFinalize() {
+    if (!draft) return;
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const totalVariance = items.reduce(
+        (sum, it) => sum + Number(it.variance_value),
+        0
+      );
+
+      for (const it of items) {
+        await supabase
+          .from("stock_take_items")
+          .update({
+            actual_stock: it.actual_stock,
+            difference: it.difference,
+            variance_value: it.variance_value,
+            reason: it.reason,
+          })
+          .eq("id", it.id);
+
+        if (it.difference !== 0) {
+          await supabase
+            .from("ingredients")
+            .update({
+              current_stock: it.actual_stock,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", it.ingredient_id);
+
+          await supabase.from("stock_movements").insert({
+            ingredient_id: it.ingredient_id,
+            movement_type: "stock_take_adjust",
+            quantity_change: it.difference,
+            stock_after: it.actual_stock,
+            unit_cost: it.unit_cost,
+            reference_id: draft.id,
+            note: it.reason || draft.take_date,
+            created_by: profile.id,
+          });
+        }
+      }
+
+      const { data: finalized } = await supabase
+        .from("stock_takes")
+        .update({
+          status: "finalized",
+          total_variance_value: totalVariance,
+          finalized_by: profile.id,
+          finalized_at: new Date().toISOString(),
+        })
+        .eq("id", draft.id)
+        .select()
+        .single();
+
+      if (finalized) {
+        setHistory((prev) => [finalized as StockTakeRow, ...prev]);
+        setDraft(null);
+        setItems([]);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const totalVariancePreview = items.reduce(
+    (sum, it) => sum + Number(it.variance_value),
+    0
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-900">
+        {t.stockTake.helpNote}
+      </div>
+
+      {!draft ? (
+        <button
+          type="button"
+          disabled={busy || ingredients.length === 0}
+          onClick={handleCreateDraft}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
+        >
+          <Plus className="w-4 h-4" />
+          <span>{t.stockTake.createBtn}</span>
+        </button>
+      ) : (
+        <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-bold text-[#4A2C18]">
+              <ClipboardCheck className="w-5 h-5 text-[#C97B36]" />
+              <span>
+                {t.stockTake.activeDraftTitle} ({draft.take_date})
+              </span>
+            </div>
+            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900">
+              {t.stockTake.draftBadge}
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                  <th className="py-2 pr-3">{t.inventory.ingredientName}</th>
+                  <th className="py-2 pr-3">{t.stockTake.systemStock}</th>
+                  <th className="py-2 pr-3">{t.stockTake.actualStock}</th>
+                  <th className="py-2 pr-3">{t.stockTake.difference}</th>
+                  <th className="py-2 pr-3">{t.stockTake.varianceValue}</th>
+                  <th className="py-2 pr-3">{t.common.note}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F3ECE2]">
+                {items.map((it) => (
+                  <tr key={it.id}>
+                    <td className="py-2.5 pr-3 font-semibold text-[#4A2C18]">
+                      {it.ingredients?.name}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      {it.system_stock} {it.ingredients?.base_unit}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <input
+                        type="number"
+                        step="any"
+                        value={it.actual_stock}
+                        onChange={(e) => updateLocalItem(it.id, e.target.value)}
+                        className="w-28 px-2.5 py-1.5 rounded-lg border border-[#E7DDD0] font-semibold"
+                      />
+                    </td>
+                    <td
+                      className={`py-2.5 pr-3 font-bold ${
+                        it.difference === 0
+                          ? "text-emerald-700"
+                          : it.difference < 0
+                          ? "text-red-700"
+                          : "text-sky-700"
+                      }`}
+                    >
+                      {it.difference > 0 ? "+" : ""}
+                      {it.difference} {it.ingredients?.base_unit}
+                    </td>
+                    <td className="py-2.5 pr-3 font-semibold">
+                      {formatMoney(it.variance_value, currencyCode)}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <input
+                        type="text"
+                        value={it.reason}
+                        onChange={(e) =>
+                          updateLocalItem(
+                            it.id,
+                            String(it.actual_stock),
+                            e.target.value
+                          )
+                        }
+                        placeholder={t.stockTake.reasonPlaceholder}
+                        className="w-44 px-2.5 py-1.5 rounded-lg border border-[#E7DDD0]"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#F3ECE2]">
+            <div className="text-sm font-bold text-[#4A2C18]">
+              {t.stockTake.varianceValue}:{" "}
+              <span
+                className={
+                  totalVariancePreview < 0 ? "text-red-700" : "text-emerald-700"
+                }
+              >
+                {formatMoney(totalVariancePreview, currencyCode)}
+              </span>
+            </div>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleFinalize}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-bold cursor-pointer disabled:opacity-60"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{t.stockTake.finalizeBtn}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3">
+        <h2 className="font-bold text-sm text-[#4A2C18]">
+          {t.stockTake.historyTitle}
+        </h2>
+        {history.length === 0 ? (
+          <p className="text-xs text-[#7B6554]">{t.common.noData}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                  <th className="py-2 pr-3">{t.common.date}</th>
+                  <th className="py-2 pr-3">{t.common.status}</th>
+                  <th className="py-2 pr-3">{t.stockTake.varianceValue}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F3ECE2]">
+                {history.map((h) => (
+                  <tr key={h.id}>
+                    <td className="py-2.5 pr-3">{h.take_date}</td>
+                    <td className="py-2.5 pr-3">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                        {t.stockTake.finalizedBadge}
+                      </span>
+                    </td>
+                    <td
+                      className={`py-2.5 pr-3 font-bold ${
+                        Number(h.total_variance_value) < 0
+                          ? "text-red-700"
+                          : "text-emerald-700"
+                      }`}
+                    >
+                      {formatMoney(h.total_variance_value, currencyCode)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

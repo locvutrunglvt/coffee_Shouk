@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/components/I18nProvider";
 import { Lock, Mail, User, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface LoginFormProps {
@@ -11,6 +12,7 @@ interface LoginFormProps {
 
 export function LoginForm({ isConfigured }: LoginFormProps) {
   const router = useRouter();
+  const { t } = useT();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,20 +26,9 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-950 space-y-3">
         <div className="flex items-center gap-2 font-bold text-amber-900">
           <AlertCircle className="w-5 h-5 shrink-0" />
-          <span>Chưa kết nối Supabase</span>
+          <span>{t.auth.setupTitle}</span>
         </div>
-        <p className="text-xs leading-relaxed text-amber-900">
-          App đã sẵn sàng nhưng cần điền 2 biến môi trường của dự án Supabase để kích hoạt đăng nhập và lưu dữ liệu:
-        </p>
-        <ol className="list-decimal list-inside text-xs space-y-1.5 text-amber-900">
-          <li>
-            Tạo project miễn phí trên <strong>supabase.com</strong> và chạy file{" "}
-            <code className="bg-amber-100 px-1.5 py-0.5 rounded">supabase/schema.sql</code> trong SQL Editor.
-          </li>
-          <li>
-            Tạo file <code className="bg-amber-100 px-1.5 py-0.5 rounded">.env.local</code> (khi chạy máy tính) hoặc thêm Environment Variables trên <strong>Vercel</strong>:
-          </li>
-        </ol>
+        <p className="text-xs leading-relaxed text-amber-900">{t.auth.setupDesc}</p>
         <pre className="bg-[#231810] text-[#FAF7F2] p-3 rounded-xl text-[11px] overflow-x-auto">
 {`NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
@@ -63,19 +54,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
         if (signInError) {
           const msg = signInError.message.toLowerCase();
           if (msg.includes("email not confirmed")) {
-            setError(
-              "Tài khoản chưa xác nhận email. Vào hộp thư bấm link xác nhận, hoặc vào Supabase -> Authentication -> Providers -> Email tắt mục Confirm email."
-            );
+            setError(t.auth.errEmailNotConfirmed);
           } else if (msg.includes("email logins are disabled")) {
-            setError(
-              "Đăng nhập Email đang bị tắt trên Supabase. Vào Authentication -> Providers -> Email để bật lên."
-            );
+            setError(t.auth.errEmailDisabled);
           } else if (msg.includes("invalid login credentials")) {
-            setError(
-              "Sai email/mật khẩu hoặc bạn chưa tạo tài khoản. Nếu mới dùng lần đầu, hãy chuyển sang tab 'Tạo tài khoản'."
-            );
+            setError(t.auth.errInvalidLogin);
           } else {
-            setError(`Lỗi đăng nhập: ${signInError.message}`);
+            setError(signInError.message);
           }
           return;
         }
@@ -93,12 +78,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
         });
         if (signUpError) {
           const msg = signUpError.message.toLowerCase();
-          if (msg.includes("email logins are disabled") || msg.includes("signups not allowed")) {
-            setError(
-              "Đăng nhập/Đăng ký bằng Email đang bị tắt trên Supabase. Vào Supabase -> Authentication -> Providers -> Email để bật 'Enable Email provider' lên."
-            );
+          if (
+            msg.includes("email logins are disabled") ||
+            msg.includes("signups not allowed")
+          ) {
+            setError(t.auth.errSignupDisabled);
           } else {
-            setError(`Lỗi đăng ký: ${signUpError.message}`);
+            setError(signUpError.message);
           }
           return;
         }
@@ -106,14 +92,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
           router.push("/");
           router.refresh();
         } else {
-          setMessage(
-            "Đăng ký thành công! Nếu Supabase bật xác nhận email, vui lòng kiểm tra hộp thư hoặc tắt Confirm Email trong Supabase Auth."
-          );
+          setMessage(t.auth.signupSuccessConfirm);
           setMode("login");
         }
       }
     } catch {
-      setError("Không thể kết nối đến hệ thống xác thực.");
+      setError(t.auth.errNetwork);
     } finally {
       setLoading(false);
     }
@@ -134,7 +118,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               : "text-[#7B6554]"
           }`}
         >
-          Đăng nhập
+          {t.auth.loginTab}
         </button>
         <button
           type="button"
@@ -148,7 +132,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               : "text-[#7B6554]"
           }`}
         >
-          Tạo tài khoản
+          {t.auth.signupTab}
         </button>
       </div>
 
@@ -170,7 +154,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
         {mode === "signup" && (
           <div>
             <label className="block text-xs font-medium text-[#4A3828] mb-1">
-              Họ và tên
+              {t.auth.fullName}
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -179,7 +163,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="VD: Nguyễn Văn A"
+                placeholder={t.auth.fullNamePlaceholder}
                 className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
               />
             </div>
@@ -188,7 +172,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
 
         <div>
           <label className="block text-xs font-medium text-[#4A3828] mb-1">
-            Email đăng nhập
+            {t.auth.email}
           </label>
           <div className="relative">
             <Mail className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -197,7 +181,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ten@quancaphe.com"
+              placeholder={t.auth.emailPlaceholder}
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
             />
           </div>
@@ -205,7 +189,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
 
         <div>
           <label className="block text-xs font-medium text-[#4A3828] mb-1">
-            Mật khẩu
+            {t.auth.password}
           </label>
           <div className="relative">
             <Lock className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -215,7 +199,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Tối thiểu 6 ký tự"
+              placeholder={t.auth.passwordPlaceholder}
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
             />
           </div>
@@ -227,18 +211,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
           className="w-full py-2.5 px-4 rounded-xl bg-[#4A2C18] hover:bg-[#3A2212] text-white font-semibold text-sm transition-colors cursor-pointer disabled:opacity-60"
         >
           {loading
-            ? "Đang xử lý..."
+            ? t.auth.processing
             : mode === "login"
-            ? "Đăng nhập vào hệ thống"
-            : "Đăng ký tài khoản"}
+            ? t.auth.loginBtn
+            : t.auth.signupBtn}
         </button>
       </form>
 
       {mode === "signup" && (
         <p className="text-[11px] text-[#7B6554] text-center leading-relaxed">
-          Tài khoản đăng ký đầu tiên trên hệ thống sẽ tự động được cấp quyền{" "}
-          <strong>Chủ quán (Admin)</strong>. Các tài khoản sau sẽ mặc định là{" "}
-          <strong>Phục vụ</strong> cho đến khi Chủ quán phân quyền lại.
+          {t.auth.firstAccountHint}
         </p>
       )}
     </div>

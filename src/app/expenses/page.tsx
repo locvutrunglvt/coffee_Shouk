@@ -1,22 +1,52 @@
 import { AppShell } from "@/components/AppShell";
-import { ModuleStub } from "@/components/ModuleStub";
 import { requireRouteAccess } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getServerI18n } from "@/lib/i18n/server";
+import {
+  ExpensesClient,
+  type ExpenseRow,
+  type RecurringExpenseRow,
+} from "./ExpensesClient";
 
 export default async function ExpensesPage() {
-  const { profile, settings } = await requireRouteAccess("/expenses");
+  const [{ profile, settings }, { t }] = await Promise.all([
+    requireRouteAccess("/expenses"),
+    getServerI18n(),
+  ]);
+  const supabase = await createClient();
+
+  const [expRes, recRes] = supabase
+    ? await Promise.all([
+        supabase
+          .from("expenses")
+          .select("*")
+          .order("expense_date", { ascending: false })
+          .limit(100),
+        supabase
+          .from("recurring_expenses")
+          .select("*")
+          .eq("is_active", true)
+          .order("next_due_date", { ascending: true }),
+      ])
+    : [{ data: [] }, { data: [] }];
 
   return (
     <AppShell profile={profile} settings={settings}>
-      <ModuleStub
-        title="Chi phí vận hành (Điện, Nước, Thuê mặt bằng)"
-        phase="Phase 5"
-        description="Theo dõi chi phí cố định định kỳ, hóa đơn điện nước và lương nhân viên."
-        features={[
-          "Thuê mặt bằng & Internet: đặt chu kỳ trả (1/3/6/12 tháng), nhắc hạn và phân bổ theo tháng",
-          "Tiền điện & nước: nhập chỉ số đầu – cuối kỳ hoặc tổng tiền hóa đơn, so sánh theo tháng",
-          "Đính kèm ảnh chụp hóa đơn / biên lai",
-        ]}
-      />
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-bold text-[#4A2C18]">
+            {t.expenses.title}
+          </h1>
+          <p className="text-xs text-[#7B6554]">{t.expenses.subtitle}</p>
+        </div>
+
+        <ExpensesClient
+          profile={profile}
+          currencyCode={settings.currency_code}
+          initialExpenses={(expRes.data as ExpenseRow[]) ?? []}
+          initialRecurring={(recRes.data as RecurringExpenseRow[]) ?? []}
+        />
+      </div>
     </AppShell>
   );
 }

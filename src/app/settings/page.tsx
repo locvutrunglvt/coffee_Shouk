@@ -1,10 +1,14 @@
 import { AppShell } from "@/components/AppShell";
 import { requireRouteAccess, type UserProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getServerI18n } from "@/lib/i18n/server";
 import { SettingsClient } from "./SettingsClient";
 
 export default async function SettingsPage() {
-  const { profile, settings } = await requireRouteAccess("/settings");
+  const [{ profile, settings }, { t }] = await Promise.all([
+    requireRouteAccess("/settings"),
+    getServerI18n(),
+  ]);
   const supabase = await createClient();
 
   const { data: allProfiles } = supabase
@@ -18,12 +22,8 @@ export default async function SettingsPage() {
     <AppShell profile={profile} settings={settings}>
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#4A2C18]">
-            Cài đặt quán & Phân quyền
-          </h1>
-          <p className="text-xs text-[#7B6554]">
-            Quản lý thông tin cửa hàng, tiền tệ (LAK/VND), QR thanh toán và vai trò nhân viên.
-          </p>
+          <h1 className="text-xl font-bold text-[#4A2C18]">{t.settings.title}</h1>
+          <p className="text-xs text-[#7B6554]">{t.settings.subtitle}</p>
         </div>
 
         <SettingsClient

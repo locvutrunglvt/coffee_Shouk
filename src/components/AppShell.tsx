@@ -20,8 +20,10 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { NAV_ITEMS, ROLE_META, type NavItem } from "@/lib/rbac";
+import { NAV_ITEMS, ROLE_STYLE, type NavItem } from "@/lib/rbac";
 import type { ShopSettings, UserProfile } from "@/lib/auth";
+import { useT } from "@/components/I18nProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const ICON_MAP: Record<NavItem["iconName"], React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -45,12 +47,14 @@ interface AppShellProps {
 export function AppShell({ profile, settings, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useT();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(profile.role));
   const bottomNavItems = visibleItems.filter((item) => item.mobilePrimary).slice(0, 4);
-  const roleMeta = ROLE_META[profile.role];
+  const roleStyle = ROLE_STYLE[profile.role];
+  const roleLabel = t.roles[profile.role];
 
   const isActiveRoute = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -83,12 +87,16 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               {settings.shop_name}
             </p>
             <p className="text-xs text-[#7B6554]">
-              Tiền tệ: {settings.currency_code} ({settings.currency_symbol})
+              {t.nav.currencyPrefix}: {settings.currency_code} ({settings.currency_symbol})
             </p>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        <div className="px-3 pt-3 pb-1 flex justify-center">
+          <LanguageSwitcher />
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           {visibleItems.map((item) => {
             const Icon = ICON_MAP[item.iconName];
             const active = isActiveRoute(item.href);
@@ -103,7 +111,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{t.nav[item.key]}</span>
               </Link>
             );
           })}
@@ -114,9 +122,9 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{profile.full_name}</p>
               <span
-                className={`inline-block mt-0.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleMeta.badgeClass}`}
+                className={`inline-block mt-0.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleStyle.badgeClass}`}
               >
-                {roleMeta.label}
+                {roleLabel}
               </span>
             </div>
           </div>
@@ -127,38 +135,41 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#7B2D26] bg-[#FDF2F2] hover:bg-[#FADBD8] transition-colors cursor-pointer disabled:opacity-60"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>{signingOut ? "Đang đăng xuất..." : "Đăng xuất"}</span>
+            <span>{signingOut ? t.nav.signingOut : t.nav.signOut}</span>
           </button>
         </div>
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-white border-b border-[#E7DDD0]">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-2 px-3 py-2.5 bg-white border-b border-[#E7DDD0]">
+        <div className="flex items-center gap-2 min-w-0">
           <Image
             src="/logo-taoi.jpeg"
             alt={settings.shop_name}
             width={36}
             height={36}
-            className="w-9 h-9 rounded-lg object-cover border border-[#E7DDD0]"
+            className="w-9 h-9 rounded-lg object-cover border border-[#E7DDD0] shrink-0"
           />
           <div className="min-w-0">
             <p className="font-bold text-sm text-[#4A2C18] truncate">
               {settings.shop_name}
             </p>
             <p className="text-[11px] text-[#7B6554] truncate">
-              {profile.full_name} • {roleMeta.label}
+              {profile.full_name} • {roleLabel}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Mở menu"
-          className="p-2 rounded-lg border border-[#E7DDD0] text-[#4A2C18] hover:bg-[#F3ECE2]"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <LanguageSwitcher compact />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label={t.nav.openMenu}
+            className="p-2 rounded-lg border border-[#E7DDD0] text-[#4A2C18] hover:bg-[#F3ECE2]"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       {/* Mobile Full Menu Drawer */}
@@ -173,9 +184,9 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               <div>
                 <p className="font-bold text-sm text-[#4A2C18]">{profile.full_name}</p>
                 <span
-                  className={`inline-block mt-0.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleMeta.badgeClass}`}
+                  className={`inline-block mt-0.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleStyle.badgeClass}`}
                 >
-                  {roleMeta.label}
+                  {roleLabel}
                 </span>
               </div>
               <button
@@ -185,6 +196,9 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+            <div className="px-3 pt-3 flex justify-center">
+              <LanguageSwitcher />
             </div>
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">
               {visibleItems.map((item) => {
@@ -202,7 +216,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span>{t.nav[item.key]}</span>
                   </Link>
                 );
               })}
@@ -215,7 +229,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-[#7B2D26] bg-[#FDF2F2]"
               >
                 <LogOut className="w-4 h-4" />
-                <span>{signingOut ? "Đang đăng xuất..." : "Đăng xuất"}</span>
+                <span>{signingOut ? t.nav.signingOut : t.nav.signOut}</span>
               </button>
             </div>
           </div>
@@ -241,7 +255,9 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               }`}
             >
               <Icon className={`w-5 h-5 ${active ? "text-[#C97B36]" : ""}`} />
-              <span className="text-[11px] mt-0.5 truncate">{item.shortLabel}</span>
+              <span className="text-[11px] mt-0.5 truncate">
+                {t.nav.short[item.key]}
+              </span>
             </Link>
           );
         })}
@@ -251,7 +267,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
           className="flex flex-col items-center justify-center px-2 py-1 rounded-lg min-w-[60px] text-[#7B6554]"
         >
           <Menu className="w-5 h-5" />
-          <span className="text-[11px] mt-0.5">Thêm</span>
+          <span className="text-[11px] mt-0.5">{t.nav.more}</span>
         </button>
       </nav>
     </div>

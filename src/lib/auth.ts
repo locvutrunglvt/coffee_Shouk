@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
-import { canAccessRoute, ROLE_META, type UserRole } from "@/lib/rbac";
+import { canAccessRoute, ROLE_STYLE, type UserRole } from "@/lib/rbac";
 
 export interface UserProfile {
   id: string;
@@ -59,7 +59,7 @@ export async function getAuthContext() {
     isConfigured: true as const,
     profile: (profile as UserProfile | null) ?? {
       id: user.id,
-      full_name: user.email?.split("@")[0] ?? "Nhân viên",
+      full_name: user.email?.split("@")[0] ?? "Staff",
       email: user.email ?? "",
       phone: "",
       role: "staff" as UserRole,
@@ -87,9 +87,8 @@ export async function requireRouteAccess(pathname: string) {
     redirect("/unauthorized");
   }
   if (!canAccessRoute(ctx.profile.role, pathname)) {
-    // If on root "/", send staff/cashier/barista directly to their primary screen
     if (pathname === "/") {
-      redirect(ROLE_META[ctx.profile.role].defaultRoute);
+      redirect(ROLE_STYLE[ctx.profile.role].defaultRoute);
     }
     redirect("/unauthorized");
   }

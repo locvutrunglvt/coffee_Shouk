@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { requireRouteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney } from "@/lib/format";
+import { getServerI18n } from "@/lib/i18n/server";
 import {
   AlertTriangle,
   ArrowRight,
@@ -15,7 +16,10 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const { profile, settings } = await requireRouteAccess("/");
+  const [{ profile, settings }, { t }] = await Promise.all([
+    requireRouteAccess("/"),
+    getServerI18n(),
+  ]);
   const supabase = await createClient();
 
   const todayStart = new Date();
@@ -64,32 +68,32 @@ export default async function DashboardPage() {
   const quickActions = [
     {
       href: "/pos",
-      title: "Bán hàng (POS)",
-      desc: "Tạo đơn tại bàn / mang đi",
+      title: t.nav.pos,
+      desc: t.dashboard.quickPosDesc,
       icon: ShoppingBag,
     },
     {
       href: "/shifts",
-      title: "Ca & Cân đối tiền",
-      desc: openShift ? "Đang có ca mở" : "Chưa mở ca hôm nay",
+      title: t.nav.shifts,
+      desc: openShift ? t.dashboard.quickShiftOpen : t.dashboard.quickShiftClosed,
       icon: Wallet,
     },
     {
       href: "/inventory",
-      title: "Nhập & Tồn kho",
-      desc: "Phiếu nhập, định lượng",
+      title: t.nav.inventory,
+      desc: t.dashboard.quickInvDesc,
       icon: PackagePlus,
     },
     {
       href: "/stock-take",
-      title: "Kiểm kê & Cân đối",
-      desc: "Đối soát hao hụt kho",
+      title: t.nav.stockTake,
+      desc: t.dashboard.quickStockTakeDesc,
       icon: ClipboardCheck,
     },
     {
       href: "/expenses",
-      title: "Điện, Nước & Mặt bằng",
-      desc: "Ghi nhận chi phí vận hành",
+      title: t.nav.expenses,
+      desc: t.dashboard.quickExpenseDesc,
       icon: Receipt,
     },
   ];
@@ -100,10 +104,10 @@ export default async function DashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-[#4A2C18]">
-              Xin chào, {profile.full_name}
+              {t.dashboard.welcome}, {profile.full_name}
             </h1>
             <p className="text-xs sm:text-sm text-[#7B6554]">
-              Tổng quan vận hành hôm nay tại {settings.shop_name}
+              {t.dashboard.subtitle} {settings.shop_name}
             </p>
           </div>
           <Link
@@ -111,62 +115,67 @@ export default async function DashboardPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold hover:bg-[#3A2212]"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Mở màn hình POS</span>
+            <span>{t.dashboard.openPosBtn}</span>
           </Link>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-            <p className="text-xs text-[#7B6554]">Doanh thu hôm nay</p>
+            <p className="text-xs text-[#7B6554]">{t.dashboard.todayRevenue}</p>
             <p className="text-2xl font-bold text-[#4A2C18] mt-1">
               {formatMoney(todayRevenue, settings.currency_code)}
             </p>
             <p className="text-xs text-[#7B6554] mt-1">
-              {todayOrders.length} đơn đã thanh toán
+              {todayOrders.length} {t.dashboard.paidOrdersCount}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-            <p className="text-xs text-[#7B6554]">Trạng thái ca làm việc</p>
+            <p className="text-xs text-[#7B6554]">{t.dashboard.shiftStatus}</p>
             <p className="text-lg font-bold mt-1 text-[#4A2C18]">
-              {openShift ? "Đang mở ca" : "Chưa mở ca"}
+              {openShift ? t.dashboard.shiftOpen : t.dashboard.shiftClosed}
             </p>
             <p className="text-xs text-[#7B6554] mt-1">
               {openShift
-                ? `Tiền đầu ca: ${formatMoney(openShift.opening_cash, settings.currency_code)}`
-                : "Vào mục Ca & Cân đối để mở ca"}
+                ? `${t.dashboard.openingCashLabel}: ${formatMoney(
+                    openShift.opening_cash,
+                    settings.currency_code
+                  )}`
+                : t.dashboard.goToShiftHint}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-            <p className="text-xs text-[#7B6554]">Cảnh báo tồn kho thấp</p>
+            <p className="text-xs text-[#7B6554]">{t.dashboard.lowStockTitle}</p>
             <p
               className={`text-2xl font-bold mt-1 ${
                 lowStockItems.length > 0 ? "text-red-700" : "text-emerald-700"
               }`}
             >
-              {lowStockItems.length} nguyên liệu
+              {lowStockItems.length} {t.dashboard.ingredientsWord}
             </p>
             <p className="text-xs text-[#7B6554] mt-1">
-              {lowStockItems.length > 0 ? "Cần nhập bổ sung sớm" : "Kho đang ổn định"}
+              {lowStockItems.length > 0
+                ? t.dashboard.needRestock
+                : t.dashboard.stockOk}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-            <p className="text-xs text-[#7B6554]">Chi phí định kỳ sắp tới</p>
+            <p className="text-xs text-[#7B6554]">{t.dashboard.recurringTitle}</p>
             <p className="text-2xl font-bold text-[#4A2C18] mt-1">
-              {recurringReminders.length} khoản
+              {recurringReminders.length} {t.dashboard.itemsWord}
             </p>
-            <p className="text-xs text-[#7B6554] mt-1">
-              Mặt bằng, điện, nước, internet
-            </p>
+            <p className="text-xs text-[#7B6554] mt-1">{t.dashboard.recurringHint}</p>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-sm font-bold text-[#4A2C18] mb-3">Truy cập nhanh</h2>
+          <h2 className="text-sm font-bold text-[#4A2C18] mb-3">
+            {t.dashboard.quickAccess}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {quickActions.map((act) => {
               const Icon = act.icon;
@@ -199,20 +208,18 @@ export default async function DashboardPage() {
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4 space-y-3">
             <div className="flex items-center gap-2 font-bold text-sm text-[#4A2C18]">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>Nguyên liệu dưới mức tối thiểu</span>
+              <span>{t.dashboard.lowStockCardTitle}</span>
             </div>
             {lowStockItems.length === 0 ? (
-              <p className="text-xs text-[#7B6554]">
-                Chưa có nguyên liệu nào dưới mức cảnh báo.
-              </p>
+              <p className="text-xs text-[#7B6554]">{t.dashboard.noLowStock}</p>
             ) : (
               <ul className="divide-y divide-[#F3ECE2] text-xs">
                 {lowStockItems.map((item) => (
                   <li key={item.id} className="py-2 flex justify-between">
                     <span className="font-medium">{item.name}</span>
                     <span className="text-red-700 font-semibold">
-                      Còn {item.current_stock} {item.base_unit} (tối thiểu{" "}
-                      {item.min_stock_alert})
+                      {t.dashboard.remaining} {item.current_stock} {item.base_unit} (
+                      {t.dashboard.minAlert} {item.min_stock_alert})
                     </span>
                   </li>
                 ))}
@@ -223,19 +230,19 @@ export default async function DashboardPage() {
           <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4 space-y-3">
             <div className="flex items-center gap-2 font-bold text-sm text-[#4A2C18]">
               <CalendarClock className="w-4 h-4 text-[#C97B36]" />
-              <span>Lịch thanh toán định kỳ (Mặt bằng / Điện / Nước)</span>
+              <span>{t.dashboard.recurringCardTitle}</span>
             </div>
             {recurringReminders.length === 0 ? (
-              <p className="text-xs text-[#7B6554]">
-                Chưa thiết lập lịch nhắc chi phí định kỳ.
-              </p>
+              <p className="text-xs text-[#7B6554]">{t.dashboard.noRecurring}</p>
             ) : (
               <ul className="divide-y divide-[#F3ECE2] text-xs">
                 {recurringReminders.map((r) => (
                   <li key={r.id} className="py-2 flex justify-between">
                     <div>
                       <p className="font-medium">{r.title}</p>
-                      <p className="text-[#7B6554]">Hạn: {r.next_due_date}</p>
+                      <p className="text-[#7B6554]">
+                        {t.dashboard.dueDate}: {r.next_due_date}
+                      </p>
                     </div>
                     <span className="font-semibold text-[#4A2C18]">
                       {formatMoney(r.amount, settings.currency_code)}

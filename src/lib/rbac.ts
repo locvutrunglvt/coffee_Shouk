@@ -1,9 +1,12 @@
+import type { Dictionary } from "@/lib/i18n";
+
 export type UserRole = "admin" | "manager" | "cashier" | "staff" | "barista";
+
+export type NavKey = keyof Dictionary["nav"]["short"];
 
 export interface NavItem {
   href: string;
-  label: string;
-  shortLabel: string;
+  key: NavKey;
   iconName:
     | "LayoutDashboard"
     | "ShoppingBag"
@@ -19,37 +22,27 @@ export interface NavItem {
   mobilePrimary?: boolean;
 }
 
-export const ROLE_META: Record<
+export const ROLE_STYLE: Record<
   UserRole,
-  { label: string; description: string; badgeClass: string; defaultRoute: string }
+  { badgeClass: string; defaultRoute: string }
 > = {
   admin: {
-    label: "Chủ quán",
-    description: "Toàn quyền: POS, Kho, Chi phí, Lãi/Lỗ (P&L) & Phân quyền",
     badgeClass: "bg-amber-900/15 text-amber-900 border-amber-900/25",
     defaultRoute: "/",
   },
   manager: {
-    label: "Quản lý ca",
-    description: "POS, Ca làm việc, Menu, Nhập/Kiểm kho, Doanh thu ngày",
     badgeClass: "bg-emerald-700/15 text-emerald-800 border-emerald-700/25",
     defaultRoute: "/",
   },
   cashier: {
-    label: "Thu ngân",
-    description: "Bán hàng POS, Thu tiền, Mở/Kết ca & Chi lặt vặt trong ca",
     badgeClass: "bg-sky-700/15 text-sky-800 border-sky-700/25",
     defaultRoute: "/pos",
   },
   staff: {
-    label: "Phục vụ",
-    description: "Order tại bàn trên điện thoại & theo dõi trạng thái món",
     badgeClass: "bg-violet-700/15 text-violet-800 border-violet-700/25",
     defaultRoute: "/pos",
   },
   barista: {
-    label: "Pha chế",
-    description: "Màn hình hàng chờ món (KDS) & báo hết nguyên liệu/món",
     badgeClass: "bg-orange-700/15 text-orange-800 border-orange-700/25",
     defaultRoute: "/bar",
   },
@@ -58,75 +51,65 @@ export const ROLE_META: Record<
 export const NAV_ITEMS: NavItem[] = [
   {
     href: "/",
-    label: "Tổng quan",
-    shortLabel: "Tổng quan",
+    key: "dashboard",
     iconName: "LayoutDashboard",
     roles: ["admin", "manager"],
     mobilePrimary: true,
   },
   {
     href: "/pos",
-    label: "Bán hàng (POS)",
-    shortLabel: "Bán hàng",
+    key: "pos",
     iconName: "ShoppingBag",
     roles: ["admin", "manager", "cashier", "staff"],
     mobilePrimary: true,
   },
   {
     href: "/bar",
-    label: "Pha chế (Bar)",
-    shortLabel: "Pha chế",
+    key: "bar",
     iconName: "Coffee",
     roles: ["admin", "manager", "cashier", "staff", "barista"],
     mobilePrimary: true,
   },
   {
     href: "/shifts",
-    label: "Ca & Cân đối tiền",
-    shortLabel: "Kết ca",
+    key: "shifts",
     iconName: "Wallet",
     roles: ["admin", "manager", "cashier"],
     mobilePrimary: true,
   },
   {
     href: "/menu",
-    label: "Thực đơn",
-    shortLabel: "Menu",
+    key: "menu",
     iconName: "BookOpen",
     roles: ["admin", "manager", "barista"],
   },
   {
     href: "/inventory",
-    label: "Nhập & Tồn kho",
-    shortLabel: "Kho",
+    key: "inventory",
     iconName: "PackagePlus",
     roles: ["admin", "manager"],
   },
   {
     href: "/stock-take",
-    label: "Kiểm kê & Cân đối",
-    shortLabel: "Kiểm kho",
+    key: "stockTake",
     iconName: "ClipboardCheck",
     roles: ["admin", "manager"],
   },
   {
     href: "/expenses",
-    label: "Điện, Nước & Chi phí",
-    shortLabel: "Chi phí",
+    key: "expenses",
     iconName: "Receipt",
     roles: ["admin", "manager", "cashier"],
   },
   {
     href: "/reports",
-    label: "Báo cáo Lãi/Lỗ",
-    shortLabel: "Lãi/Lỗ",
+    key: "reports",
     iconName: "BarChart3",
     roles: ["admin", "manager"],
   },
   {
     href: "/settings",
-    label: "Cài đặt & Phân quyền",
-    shortLabel: "Cài đặt",
+    key: "settings",
     iconName: "Settings",
     roles: ["admin"],
   },

@@ -1,22 +1,72 @@
 import { AppShell } from "@/components/AppShell";
-import { ModuleStub } from "@/components/ModuleStub";
 import { requireRouteAccess } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getServerI18n } from "@/lib/i18n/server";
+import { computeMonthlyPnL } from "@/lib/pnl";
+import { ReportsClient } from "./ReportsClient";
 
-export default async function ReportsPage() {
-  const { profile, settings } = await requireRouteAccess("/reports");
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  const [{ profile, settings }, { t }, params] = await Promise.all([
+    requireRouteAccess("/reports"),
+    getServerI18n(),
+    searchParams,
+  ]);
+  const supabase = await createClient();
+
+  const currentMonth =
+    params.month && /^\d{4}-\d{2}$/.test(params.month)
+      ? params.month
+      : new Date().toISOString().slice(0, 7);
+
+  const summary = supabase
+    ? await computeMonthlyPnL(supabase, currentMonth)
+    : await Promise.resolve({
+        month: currentMonth,
+        ordersCount: 0,
+        netRevenue: 0,
+        cashRevenue: 0,
+        qrRevenue: 0,
+        otherRevenue: 0,
+        cogs: 0,
+        stockLoss: 0,
+        grossProfit: 0,
+        totalOperatingExpenses: 0,
+        netProfit: 0,
+        profitMarginPct: 0,
+        breakEvenDaily: 0,
+        expenseByGroup: {
+          rent: 0,
+          electricity: 0,
+          water: 0,
+          internet: 0,
+          payroll: 0,
+          maintenance: 0,
+          marketing: 0,
+          shift_petty_cash: 0,
+          other: 0,
+        },
+        topProducts: [],
+        rawOrders: [],
+        rawExpenses: [],
+        rawMovements: [],
+      });
 
   return (
     <AppShell profile={profile} settings={settings}>
-      <ModuleStub
-        title="Báo cáo Cân đối Lãi / Lỗ (P&L)"
-        phase="Phase 5"
-        description="Tổng hợp doanh thu, giá vốn nguyên liệu, hao hụt kho và chi phí vận hành."
-        features={[
-          "Bảng cân đối Lãi/Lỗ: Doanh thu - Giá vốn - Hao hụt - Chi phí = Lợi nhuận ròng",
-          "Tính điểm hòa vốn mỗi ngày/tháng",
-          "Thống kê món bán chạy và xuất báo cáo Excel (.xlsx)",
-        ]}
-      />
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-bold text-[#4A2C18]">
+            {t.reports.title}
+          </h1>
+          <p className="text-xs text-[#7B6554]">{t.reports.subtitle}</p>
+        </div>
+
+        <ReportsClient currencyCode={settings.currency_code} summary={summary} />
+      </div>
     </AppShell>
   );
 }

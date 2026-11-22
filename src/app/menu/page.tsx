@@ -1,22 +1,70 @@
 import { AppShell } from "@/components/AppShell";
-import { ModuleStub } from "@/components/ModuleStub";
 import { requireRouteAccess } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getServerI18n } from "@/lib/i18n/server";
+import {
+  MenuClient,
+  type CategoryRow,
+  type ProductRow,
+  type TableRow,
+  type ToppingRow,
+  type VariantRow,
+} from "./MenuClient";
 
 export default async function MenuPage() {
-  const { profile, settings } = await requireRouteAccess("/menu");
+  const [{ profile, settings }, { t }] = await Promise.all([
+    requireRouteAccess("/menu"),
+    getServerI18n(),
+  ]);
+  const supabase = await createClient();
+
+  const [catRes, prodRes, varRes, topRes, tableRes] = supabase
+    ? await Promise.all([
+        supabase
+          .from("categories")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("products")
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("product_variants")
+          .select("*")
+          .eq("is_active", true),
+        supabase
+          .from("toppings")
+          .select("*")
+          .eq("is_active", true)
+          .order("name", { ascending: true }),
+        supabase
+          .from("dining_tables")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   return (
     <AppShell profile={profile} settings={settings}>
-      <ModuleStub
-        title="Quản lý Thực đơn (Menu)"
-        phase="Phase 2"
-        description="Danh mục đồ uống, biến thể Size, Topping và trạng thái còn/hết hàng."
-        features={[
-          "Thêm / sửa danh mục, món nước, giá theo từng Size",
-          "Quản lý nhóm Topping đi kèm",
-          "Bật / tắt nhanh trạng thái Hết món cho quầy và pha chế",
-        ]}
-      />
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-bold text-[#4A2C18]">{t.menu.title}</h1>
+          <p className="text-xs text-[#7B6554]">{t.menu.subtitle}</p>
+        </div>
+
+        <MenuClient
+          currencyCode={settings.currency_code}
+          userRole={profile.role}
+          initialCategories={(catRes.data as CategoryRow[]) ?? []}
+          initialProducts={(prodRes.data as ProductRow[]) ?? []}
+          initialVariants={(varRes.data as VariantRow[]) ?? []}
+          initialToppings={(topRes.data as ToppingRow[]) ?? []}
+          initialTables={(tableRes.data as TableRow[]) ?? []}
+        />
+      </div>
     </AppShell>
   );
 }

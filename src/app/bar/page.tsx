@@ -1,22 +1,35 @@
 import { AppShell } from "@/components/AppShell";
-import { ModuleStub } from "@/components/ModuleStub";
 import { requireRouteAccess } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getServerI18n } from "@/lib/i18n/server";
+import { BarClient, type BarOrder } from "./BarClient";
 
 export default async function BarPage() {
-  const { profile, settings } = await requireRouteAccess("/bar");
+  const [{ profile, settings }, { t }] = await Promise.all([
+    requireRouteAccess("/bar"),
+    getServerI18n(),
+  ]);
+  const supabase = await createClient();
+
+  const { data } = supabase
+    ? await supabase
+        .from("orders")
+        .select(
+          "id, order_number, order_type, status, note, created_at, dining_tables(name), order_items(id, product_name, variant_name, quantity, toppings_json, note)"
+        )
+        .in("status", ["pending", "preparing", "ready"])
+        .order("created_at", { ascending: true })
+    : { data: [] };
 
   return (
     <AppShell profile={profile} settings={settings}>
-      <ModuleStub
-        title="Màn hình Pha chế (Bar / KDS)"
-        phase="Phase 2"
-        description="Hiển thị hàng chờ món theo thời gian thực qua Supabase Realtime."
-        features={[
-          "Tự nhảy đơn mới ngay khi thu ngân hoặc phục vụ gửi order",
-          "Tô nổi bật ghi chú đặc biệt và topping từng ly",
-          "Bấm chuyển trạng thái Đang làm → Hoàn thành",
-        ]}
-      />
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-bold text-[#4A2C18]">{t.bar.title}</h1>
+          <p className="text-xs text-[#7B6554]">{t.bar.subtitle}</p>
+        </div>
+        <BarClient initialOrders={(data as unknown as BarOrder[]) ?? []} />
+      </div>
     </AppShell>
   );
 }

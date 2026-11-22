@@ -6,6 +6,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { url, anonKey, isConfigured } = getSupabaseEnv();
 
+  if (pathname.startsWith("/api/locale")) {
+    return NextResponse.next();
+  }
+
   if (!isConfigured) {
     if (pathname !== "/login") {
       return NextResponse.redirect(new URL("/login", request.url));
