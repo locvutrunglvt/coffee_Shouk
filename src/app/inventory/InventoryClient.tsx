@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateTimeVN, formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
+import { localizeName } from "@/lib/i18n/catalogTranslator";
 import type { UserProfile } from "@/lib/auth";
 import type { ProductRow, ToppingRow, VariantRow } from "@/app/menu/MenuClient";
 import {
@@ -93,7 +94,7 @@ export function InventoryClient({
   variants,
   toppings,
 }: InventoryClientProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [tab, setTab] = useState<
     "stock" | "import" | "recipes" | "movements" | "suppliers"
   >("stock");
@@ -816,7 +817,7 @@ export function InventoryClient({
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name}
+                      {localizeName(p, locale)}
                     </option>
                   ))}
                 </select>
@@ -851,7 +852,7 @@ export function InventoryClient({
               >
                 {toppings.map((tp) => (
                   <option key={tp.id} value={tp.id}>
-                    {tp.name}
+                    {localizeName(tp, locale)}
                   </option>
                 ))}
               </select>

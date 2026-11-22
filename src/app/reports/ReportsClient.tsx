@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/format";
 import type { PnLSummary } from "@/lib/pnl";
 import type { ExpenseGroup } from "@/lib/types";
 import { useT } from "@/components/I18nProvider";
+import { translateText } from "@/lib/i18n/catalogTranslator";
 import { Download } from "lucide-react";
 
 interface ReportsClientProps {
@@ -172,7 +173,7 @@ export function ReportsClient({ currencyCode, summary }: ReportsClientProps) {
                 {summary.topProducts.map((p) => (
                   <tr key={p.name}>
                     <td className="py-2 pr-3 font-semibold text-[#14532D]">
-                      {p.name}
+                      {translateText(p.name, locale)}
                     </td>
                     <td className="py-2 pr-3">{p.qty}</td>
                     <td className="py-2 pr-3 text-right font-semibold">

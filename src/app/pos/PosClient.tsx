@@ -372,30 +372,61 @@ export function PosClient({
     }
   }
 
+  function escapeHtml(str: string) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function handlePrintOrder(order: RecentOrderRow) {
-    const win = window.open("", "_blank", "width=360,height=600");
+    const win = window.open("", "_blank", "width=380,height=620");
     if (!win) return;
+    const prodById = new Map(products.map((p) => [p.id, p]));
+    const orderPlace =
+      order.order_type === "dine_in"
+        ? order.dining_tables?.name
+          ? translateText(order.dining_tables.name, locale)
+          : t.pos.dineIn
+        : order.order_type === "take_away"
+        ? t.pos.takeAway
+        : t.pos.delivery;
+
     const rowsHtml = order.order_items
-      .map(
-        (i) =>
-          `<tr>
-            <td>${i.quantity}x ${i.product_name}${i.variant_name ? ` (${i.variant_name})` : ""}</td>
-            <td style="text-align:right">${formatMoney(i.line_total, settings.currency_code)}</td>
-          </tr>`
-      )
+      .map((i) => {
+        const prod = i.product_id ? prodById.get(i.product_id) : undefined;
+        const localizedProduct = prod
+          ? localizeName(prod, locale)
+          : translateText(i.product_name, locale);
+        const variantSuffix = i.variant_name ? ` (${i.variant_name})` : "";
+        const toppingsLine =
+          Array.isArray(i.toppings_json) && i.toppings_json.length > 0
+            ? `<div style="font-size:11px;color:#444;padding-left:10px">+ ${i.toppings_json
+                .map((tp) => escapeHtml(translateText(tp.name, locale)))
+                .join(", ")}</div>`
+            : "";
+        const noteLine = i.note
+          ? `<div style="font-size:11px;color:#666;font-style:italic;padding-left:10px">${escapeHtml(i.note)}</div>`
+          : "";
+        return `<tr>
+            <td><div>${i.quantity}x ${escapeHtml(localizedProduct)}${escapeHtml(variantSuffix)}</div>${toppingsLine}${noteLine}</td>
+            <td style="text-align:right;vertical-align:top;white-space:nowrap">${escapeHtml(formatMoney(i.line_total, settings.currency_code))}</td>
+          </tr>`;
+      })
       .join("");
 
     win.document.write(`
-      <html><head><title>#${order.order_number}</title>
-      <style>body{font-family:monospace;padding:12px;font-size:12px}h2,p{margin:2px 0;text-align:center}table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:4px 0;border-bottom:1px dashed #ccc}</style>
+      <!DOCTYPE html><html lang="${locale}"><head><meta charset="utf-8" /><title>#${order.order_number}</title>
+      <style>body{font-family:'Noto Sans Lao','Segoe UI',Arial,sans-serif;padding:12px;font-size:12px;color:#111}h2,p{margin:2px 0;text-align:center}table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:5px 0;border-bottom:1px dashed #ccc}</style>
       </head><body>
-      <h2>${settings.shop_name}</h2>
-      <p>${settings.address || ""}</p>
-      <p>${settings.phone || ""}</p>
+      <h2>${escapeHtml(settings.shop_name)}</h2>
+      ${settings.address ? `<p>${escapeHtml(settings.address)}</p>` : ""}
+      ${settings.phone ? `<p>${escapeHtml(settings.phone)}</p>` : ""}
       <hr/>
-      <p><strong>#${order.order_number}</strong> • ${formatDateTimeVN(order.created_at)}</p>
+      <p><strong>#${order.order_number}</strong> • ${escapeHtml(orderPlace)} • ${escapeHtml(formatDateTimeVN(order.created_at))}</p>
       <table>${rowsHtml}</table>
-      <p style="text-align:right;font-size:14px;margin-top:8px"><strong>${t.common.total}: ${formatMoney(order.total_amount, settings.currency_code)}</strong></p>
+      <p style="text-align:right;font-size:14px;margin-top:8px"><strong>${escapeHtml(t.common.total)}: ${escapeHtml(formatMoney(order.total_amount, settings.currency_code))}</strong></p>
       <script>window.print();</script>
       </body></html>
     `);
