@@ -61,7 +61,22 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
           password,
         });
         if (signInError) {
-          setError("Sai email hoặc mật khẩu, vui lòng kiểm tra lại.");
+          const msg = signInError.message.toLowerCase();
+          if (msg.includes("email not confirmed")) {
+            setError(
+              "Tài khoản chưa xác nhận email. Vào hộp thư bấm link xác nhận, hoặc vào Supabase -> Authentication -> Providers -> Email tắt mục Confirm email."
+            );
+          } else if (msg.includes("email logins are disabled")) {
+            setError(
+              "Đăng nhập Email đang bị tắt trên Supabase. Vào Authentication -> Providers -> Email để bật lên."
+            );
+          } else if (msg.includes("invalid login credentials")) {
+            setError(
+              "Sai email/mật khẩu hoặc bạn chưa tạo tài khoản. Nếu mới dùng lần đầu, hãy chuyển sang tab 'Tạo tài khoản'."
+            );
+          } else {
+            setError(`Lỗi đăng nhập: ${signInError.message}`);
+          }
           return;
         }
         router.push("/");
@@ -77,7 +92,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
           },
         });
         if (signUpError) {
-          setError(signUpError.message);
+          const msg = signUpError.message.toLowerCase();
+          if (msg.includes("email logins are disabled") || msg.includes("signups not allowed")) {
+            setError(
+              "Đăng nhập/Đăng ký bằng Email đang bị tắt trên Supabase. Vào Supabase -> Authentication -> Providers -> Email để bật 'Enable Email provider' lên."
+            );
+          } else {
+            setError(`Lỗi đăng ký: ${signUpError.message}`);
+          }
           return;
         }
         if (data.session) {
