@@ -463,7 +463,56 @@ export function PosClient({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+          {/* Mobile ergonomic list rows (inspired by mobile video) */}
+          <div className="sm:hidden space-y-2">
+            {filteredProducts.map((p) => (
+              <div
+                key={`mob-${p.id}`}
+                className={`card-3d rounded-2xl p-2.5 flex items-center justify-between gap-2.5 ${
+                  !p.is_available ? "opacity-55" : ""
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="relative w-14 h-14 rounded-xl bg-[#EAFBF0] overflow-hidden shrink-0 border border-[#CDE9D5] flex items-center justify-center">
+                    {p.image_url ? (
+                      <Image
+                        src={p.image_url}
+                        alt={p.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Coffee className="w-6 h-6 text-[#16A34A]/60" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-[#14532D] truncate">
+                      {p.name}
+                    </p>
+                    <p className="text-xs font-extrabold text-[#15803D] mt-0.5">
+                      {formatMoney(p.base_price, settings.currency_code)}
+                    </p>
+                  </div>
+                </div>
+                {p.is_available ? (
+                  <button
+                    type="button"
+                    onClick={() => openCustomize(p)}
+                    className="px-3 py-2 rounded-xl btn-3d-green text-xs font-extrabold shrink-0 cursor-pointer"
+                  >
+                    {t.orderPublic.pickBtn}
+                  </button>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-xl bg-red-100 text-red-700 text-xs font-bold shrink-0">
+                    {t.pos.outOfStock}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop / Tablet POS 5-col grid */}
+          <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredProducts.map((p) => (
               <button
                 key={p.id}

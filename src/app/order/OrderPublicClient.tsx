@@ -16,12 +16,15 @@ import type {
   VariantRow,
 } from "@/app/menu/MenuClient";
 import {
+  ArrowLeft,
+  Banknote,
+  Check,
   CheckCircle2,
   Coffee,
   Minus,
   Plus,
+  QrCode,
   Search,
-  ShoppingBag,
   Sprout,
   Trash2,
   X,
@@ -58,12 +61,20 @@ export function OrderPublicClient({
   initialTableId,
 }: OrderPublicClientProps) {
   const { t } = useT();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedCat, setSelectedCat] = useState("all");
   const [search, setSearch] = useState("");
+  const [serviceType, setServiceType] = useState<
+    "dine_in" | "take_away" | "delivery"
+  >(initialTableId ? "dine_in" : "take_away");
   const [tableId, setTableId] = useState<string>(initialTableId ?? "");
-  const [cart, setCart] = useState<PublicCartItem[]>([]);
-  const [cartOpen, setCartOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [payPref, setPayPref] = useState<"cash" | "qr">("cash");
   const [orderNote, setOrderNote] = useState("");
+
+  const [cart, setCart] = useState<PublicCartItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [confirmed, setConfirmed] = useState<{
@@ -136,9 +147,19 @@ export function OrderPublicClient({
         note: i.note,
       }));
 
+      const metaParts: string[] = [];
+      if (serviceType === "delivery") {
+        metaParts.push(`[${t.pos.delivery}] ${deliveryAddress.trim()}`);
+      } else if (serviceType === "take_away") {
+        metaParts.push(`[${t.pos.takeAway}]`);
+      }
+      if (customerName.trim()) metaParts.push(customerName.trim());
+      if (customerPhone.trim()) metaParts.push(customerPhone.trim());
+      if (orderNote.trim()) metaParts.push(orderNote.trim());
+
       const { data, error } = await supabase.rpc("submit_qr_order", {
-        p_table_id: tableId || null,
-        p_note: orderNote.trim(),
+        p_table_id: serviceType === "dine_in" && tableId ? tableId : null,
+        p_note: metaParts.join(" • "),
         p_items: payloadItems,
       });
 
@@ -154,7 +175,7 @@ export function OrderPublicClient({
       });
       setCart([]);
       setOrderNote("");
-      setCartOpen(false);
+      setStep(1);
     } catch {
       setErrorMsg(t.common.error);
     } finally {
@@ -177,15 +198,15 @@ export function OrderPublicClient({
 
   return (
     <div className="min-h-screen pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b-2 border-[#CDE9D5] px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+      {/* Sticky Top Header */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b-2 border-[#CDE9D5]">
+        <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <Image
               src="/logo-taoi.jpeg"
               alt={settings.shop_name}
-              width={42}
-              height={42}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-xl object-cover border-2 border-[#86EFAC] shrink-0"
             />
             <div className="min-w-0">
@@ -194,7 +215,7 @@ export function OrderPublicClient({
                 <Sprout className="w-4 h-4 text-[#16A34A]" />
               </p>
               <p className="text-xs font-bold text-[#15803D] truncate">
-                {currentTable
+                {serviceType === "dine_in" && currentTable
                   ? `${t.orderPublic.tableBadge}: ${currentTable.name}`
                   : t.orderPublic.welcome}
               </p>
@@ -202,9 +223,55 @@ export function OrderPublicClient({
           </div>
           <LanguageSwitcher compact />
         </div>
+
+        {/* 3-Step Mobile Stepper (Inspired by reference mobile video) */}
+        {!confirmed && (
+          <div className="max-w-2xl mx-auto px-4 pb-2.5 pt-1 grid grid-cols-3 gap-2">
+            {(
+              [
+                [1, t.orderPublic.stepOrder],
+                [2, t.orderPublic.stepCustomer],
+                [3, t.orderPublic.stepConfirm],
+              ] as const
+            ).map(([sNum, label]) => {
+              const active = step === sNum;
+              const done = step > sNum;
+              return (
+                <button
+                  key={sNum}
+                  type="button"
+                  disabled={sNum > 1 && cart.length === 0}
+                  onClick={() => {
+                    if (sNum === 1 || cart.length > 0) setStep(sNum);
+                  }}
+                  className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer disabled:opacity-45 ${
+                    active
+                      ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
+                      : done
+                      ? "bg-[#EAFBF0] text-[#15803D] border-[#86EFAC]"
+                      : "bg-white text-[#3B6B4C] border-[#CDE9D5]"
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
+                      active
+                        ? "bg-white text-[#16A34A]"
+                        : done
+                        ? "bg-[#16A34A] text-white"
+                        : "bg-[#EAFBF0] text-[#15803D]"
+                    }`}
+                  >
+                    {done ? <Check className="w-2.5 h-2.5" /> : sNum}
+                  </span>
+                  <span className="truncate">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 space-y-5">
+      <main className="max-w-2xl mx-auto p-4 space-y-4">
         {confirmed ? (
           <div className="card-3d rounded-3xl p-6 text-center space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto icon-3d">
@@ -216,7 +283,7 @@ export function OrderPublicClient({
             <p className="text-sm text-[#2F6844]">
               {t.orderPublic.orderSentDesc}
             </p>
-            <div className="inline-block px-5 py-2.5 rounded-2xl bg-[#EAFBF0] border border-[#CDE9D5]">
+            <div className="inline-block px-6 py-3 rounded-2xl bg-[#EAFBF0] border border-[#CDE9D5]">
               <p className="text-xs text-[#2F6844]">
                 {t.orderPublic.orderNumberLabel}
               </p>
@@ -224,11 +291,9 @@ export function OrderPublicClient({
                 #{confirmed.order_number}
               </p>
             </div>
-
             <p className="text-xs text-[#2F6844]">
               {t.orderPublic.payAtCounterHint}
             </p>
-
             {(settings.qr_image_url ||
               settings.vietqr_account_no ||
               settings.emvco_base_qr) && (
@@ -240,7 +305,6 @@ export function OrderPublicClient({
                 />
               </div>
             )}
-
             <button
               type="button"
               onClick={() => setConfirmed(null)}
@@ -249,40 +313,15 @@ export function OrderPublicClient({
               {t.orderPublic.orderMoreBtn}
             </button>
           </div>
-        ) : (
+        ) : step === 1 ? (
+          /* STEP 1: HORIZONTAL CATEGORY CHIPS + SEARCH + ONE-HAND LIST CARDS */
           <>
-            {/* Table selector (if customer opened /order without table param) */}
-            <div className="card-3d rounded-2xl p-3.5 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-[#16A34A] absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder={t.orderPublic.searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-[#F2FBF4]"
-                  />
-                </div>
-                <select
-                  value={tableId}
-                  onChange={(e) => setTableId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white font-semibold text-[#14532D]"
-                >
-                  <option value="">{t.orderPublic.takeAwayBadge}</option>
-                  {tables.map((tb) => (
-                    <option key={tb.id} value={tb.id}>
-                      {tb.name} ({tb.zone})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5">
+            <div className="card-3d rounded-2xl p-3 space-y-2.5">
+              <div className="flex gap-2 overflow-x-auto pb-1">
                 <button
                   type="button"
                   onClick={() => setSelectedCat("all")}
-                  className={`px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border shrink-0 cursor-pointer ${
                     selectedCat === "all"
                       ? "bg-[#16A34A] text-white border-[#16A34A]"
                       : "bg-[#F2FBF4] text-[#14532D] border-[#CDE9D5]"
@@ -295,7 +334,7 @@ export function OrderPublicClient({
                     key={c.id}
                     type="button"
                     onClick={() => setSelectedCat(c.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border cursor-pointer ${
+                    className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border shrink-0 cursor-pointer ${
                       selectedCat === c.id
                         ? "bg-[#16A34A] text-white border-[#16A34A]"
                         : "bg-[#F2FBF4] text-[#14532D] border-[#CDE9D5]"
@@ -305,77 +344,340 @@ export function OrderPublicClient({
                   </button>
                 ))}
               </div>
+
+              <div className="relative">
+                <Search className="w-4 h-4 text-[#16A34A] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t.orderPublic.searchPlaceholder}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-[#F2FBF4]"
+                />
+              </div>
             </div>
 
-            {/* Drink Gallery */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+            <div className="space-y-2.5">
               {filteredProducts.map((p) => (
-                <button
+                <div
                   key={p.id}
-                  type="button"
-                  disabled={!p.is_available}
-                  onClick={() => openCustomize(p)}
-                  className={`text-left card-3d rounded-2xl overflow-hidden flex flex-col transition-transform ${
-                    p.is_available
-                      ? "hover:-translate-y-0.5 cursor-pointer"
-                      : "opacity-50 cursor-not-allowed"
+                  className={`card-3d rounded-2xl p-2.5 flex items-center justify-between gap-3 ${
+                    !p.is_available ? "opacity-55" : ""
                   }`}
                 >
-                  <div className="relative h-36 sm:h-44 w-full bg-[#EAFBF0] flex items-center justify-center overflow-hidden">
-                    {p.image_url ? (
-                      <Image
-                        src={p.image_url}
-                        alt={p.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <Coffee className="w-10 h-10 text-[#16A34A]/60" />
-                    )}
-                    {!p.is_available && (
-                      <span className="absolute inset-0 bg-black/50 text-white text-xs font-bold flex items-center justify-center">
-                        {t.pos.outOfStock}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="font-extrabold text-sm sm:text-base text-[#14532D] line-clamp-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative w-16 h-16 rounded-xl bg-[#EAFBF0] overflow-hidden shrink-0 border border-[#CDE9D5] flex items-center justify-center">
+                      {p.image_url ? (
+                        <Image
+                          src={p.image_url}
+                          alt={p.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <Coffee className="w-7 h-7 text-[#16A34A]/60" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-sm sm:text-base text-[#14532D] truncate">
                         {p.name}
                       </p>
                       {p.description && (
-                        <p className="text-xs text-[#2F6844] mt-0.5 line-clamp-2">
+                        <p className="text-xs text-[#2F6844] line-clamp-1">
                           {p.description}
                         </p>
                       )}
+                      <p className="text-sm font-extrabold text-[#15803D] mt-0.5">
+                        {formatMoney(p.base_price, settings.currency_code)}
+                      </p>
                     </div>
-                    <p className="text-sm font-extrabold text-[#15803D] mt-2">
-                      {formatMoney(p.base_price, settings.currency_code)}
-                    </p>
                   </div>
-                </button>
+
+                  {p.is_available ? (
+                    <button
+                      type="button"
+                      onClick={() => openCustomize(p)}
+                      className="px-3 py-2 rounded-xl btn-3d-green text-xs sm:text-sm font-extrabold shrink-0 cursor-pointer"
+                    >
+                      {t.orderPublic.pickBtn}
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 text-xs font-bold shrink-0">
+                      {t.pos.outOfStock}
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           </>
+        ) : step === 2 ? (
+          /* STEP 2: TABLE / SERVICE TYPE & CUSTOMER INFO */
+          <div className="card-3d rounded-2xl p-5 space-y-4">
+            <h2 className="font-extrabold text-base text-[#14532D]">
+              {t.orderPublic.serviceTypeTitle}
+            </h2>
+
+            <div className="space-y-2">
+              {(
+                [
+                  ["dine_in", t.pos.dineIn],
+                  ["take_away", t.pos.takeAway],
+                  ["delivery", t.pos.delivery],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setServiceType(key)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border text-sm font-bold cursor-pointer ${
+                    serviceType === key
+                      ? "bg-[#EAFBF0] border-[#16A34A] text-[#14532D]"
+                      : "bg-white border-[#CDE9D5] text-[#3B6B4C]"
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      serviceType === key
+                        ? "border-[#16A34A]"
+                        : "border-[#CDE9D5]"
+                    }`}
+                  >
+                    {serviceType === key && (
+                      <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+                    )}
+                  </span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {serviceType === "dine_in" && (
+              <div>
+                <label className="block text-sm font-bold text-[#14532D] mb-1">
+                  {t.pos.selectTable}
+                </label>
+                <select
+                  value={tableId}
+                  onChange={(e) => setTableId(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm rounded-xl border border-[#CDE9D5] bg-white font-semibold"
+                >
+                  <option value="">{t.pos.selectTable}</option>
+                  {tables.map((tb) => (
+                    <option key={tb.id} value={tb.id}>
+                      {tb.name} ({tb.zone})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {serviceType === "delivery" && (
+              <div>
+                <label className="block text-sm font-bold text-[#14532D] mb-1">
+                  {t.orderPublic.deliveryAddress}
+                </label>
+                <input
+                  type="text"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder={t.orderPublic.deliveryAddress}
+                  className="w-full px-3 py-2.5 text-sm rounded-xl border border-[#CDE9D5]"
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-bold text-[#14532D] mb-1">
+                  {t.orderPublic.customerName}
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#14532D] mb-1">
+                  {t.orderPublic.customerPhone}
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-[#14532D] mb-1">
+                {t.common.note}
+              </label>
+              <input
+                type="text"
+                value={orderNote}
+                onChange={(e) => setOrderNote(e.target.value)}
+                placeholder={t.orderPublic.orderNotePlaceholder}
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+              />
+            </div>
+          </div>
+        ) : (
+          /* STEP 3: PAYMENT METHOD + ORDER SUMMARY + CONFIRM */
+          <div className="space-y-4">
+            {errorMsg && (
+              <p className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+                {errorMsg}
+              </p>
+            )}
+
+            <div className="card-3d rounded-2xl p-5 space-y-3">
+              <h2 className="font-extrabold text-base text-[#14532D]">
+                {t.pos.paymentMethod}
+              </h2>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPayPref("cash")}
+                  className={`p-3 rounded-xl border text-left text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer ${
+                    payPref === "cash"
+                      ? "bg-[#EAFBF0] border-[#16A34A] text-[#14532D]"
+                      : "bg-white border-[#CDE9D5] text-[#3B6B4C]"
+                  }`}
+                >
+                  <Banknote className="w-4 h-4 text-[#16A34A] shrink-0" />
+                  <span>{t.orderPublic.payAtCounterOption}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPayPref("qr")}
+                  className={`p-3 rounded-xl border text-left text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer ${
+                    payPref === "qr"
+                      ? "bg-[#EAFBF0] border-[#16A34A] text-[#14532D]"
+                      : "bg-white border-[#CDE9D5] text-[#3B6B4C]"
+                  }`}
+                >
+                  <QrCode className="w-4 h-4 text-[#16A34A] shrink-0" />
+                  <span>{t.pos.qrTransfer}</span>
+                </button>
+              </div>
+
+              {payPref === "qr" && (
+                <PaymentQrCard
+                  settings={settings}
+                  amount={totalAmount}
+                  reference="TaOiQR"
+                />
+              )}
+            </div>
+
+            <div className="card-3d rounded-2xl p-5 space-y-3">
+              <h2 className="font-extrabold text-base text-[#14532D]">
+                {t.orderPublic.orderSummaryTitle} ({totalCount})
+              </h2>
+              <div className="divide-y divide-[#DDF3E4]">
+                {cart.map((item, idx) => {
+                  const topSum = item.toppings.reduce((s, tp) => s + tp.price, 0);
+                  const lineTotal = (item.unitPrice + topSum) * item.quantity;
+                  return (
+                    <div
+                      key={idx}
+                      className="py-2.5 flex items-start justify-between gap-2"
+                    >
+                      <div>
+                        <p className="font-bold text-sm text-[#14532D]">
+                          {item.quantity}x {item.productName}
+                          {item.variantName ? ` (${item.variantName})` : ""}
+                        </p>
+                        {item.toppings.length > 0 && (
+                          <p className="text-xs text-[#2F6844]">
+                            + {item.toppings.map((tp) => tp.name).join(", ")}
+                          </p>
+                        )}
+                        {item.note && (
+                          <p className="text-xs text-amber-800 italic">
+                            {item.note}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-extrabold text-[#15803D]">
+                          {formatMoney(lineTotal, settings.currency_code)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = cart.filter((_, i) => i !== idx);
+                            setCart(next);
+                            if (next.length === 0) setStep(1);
+                          }}
+                          className="p-1 text-red-600 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="border-t border-[#CDE9D5] pt-3 flex justify-between items-center text-base font-extrabold text-[#14532D]">
+                <span>{t.orderPublic.totalLabel}</span>
+                <span className="text-xl text-[#15803D]">
+                  {formatMoney(totalAmount, settings.currency_code)}
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </main>
 
-      {/* Sticky Bottom Cart Bar */}
+      {/* Sticky Bottom Action Bar matching the mobile video */}
       {!confirmed && totalCount > 0 && (
-        <div className="fixed bottom-4 inset-x-4 z-30 max-w-2xl mx-auto">
-          <button
-            type="button"
-            onClick={() => setCartOpen(true)}
-            className="w-full py-3.5 px-5 rounded-2xl btn-3d-green flex items-center justify-between text-base font-extrabold cursor-pointer"
-          >
-            <span className="inline-flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5" />
-              <span>
-                {t.orderPublic.viewCart} ({totalCount})
-              </span>
-            </span>
-            <span>{formatMoney(totalAmount, settings.currency_code)}</span>
-          </button>
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-sm border-t-2 border-[#CDE9D5] px-4 py-3 shadow-[0_-4px_16px_rgba(22,163,74,0.12)]">
+          <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={() => setStep(step === 3 ? 2 : 1)}
+                className="p-2.5 rounded-xl border border-[#CDE9D5] text-[#14532D] hover:bg-[#EAFBF0] cursor-pointer"
+                title={t.orderPublic.backBtn}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+
+            <div className="min-w-0">
+              <p className="text-xs text-[#2F6844]">
+                {t.orderPublic.totalLabel} ({totalCount})
+              </p>
+              <p className="text-lg font-extrabold text-[#15803D] truncate">
+                {formatMoney(totalAmount, settings.currency_code)}
+              </p>
+            </div>
+
+            {step < 3 ? (
+              <button
+                type="button"
+                onClick={() => setStep(step === 1 ? 2 : 3)}
+                className="px-6 py-3 rounded-2xl btn-3d-green text-sm sm:text-base font-extrabold cursor-pointer shrink-0"
+              >
+                {t.orderPublic.continueBtn}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={handleSubmitOrder}
+                className="px-6 py-3 rounded-2xl btn-3d-green text-sm sm:text-base font-extrabold cursor-pointer disabled:opacity-60 shrink-0"
+              >
+                {submitting
+                  ? t.orderPublic.sending
+                  : t.orderPublic.sendOrderBtn}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -441,7 +743,7 @@ export function OrderPublicClient({
                 <p className="text-sm font-bold text-[#14532D]">
                   {t.pos.toppingsLabel}
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
                   {toppings
                     .filter((tp) => tp.is_available)
                     .map((tp) => {
@@ -462,16 +764,16 @@ export function OrderPublicClient({
                               ]);
                             }
                           }}
-                          className={`p-2.5 rounded-xl border text-left text-xs sm:text-sm cursor-pointer ${
+                          className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-sm cursor-pointer ${
                             checked
                               ? "bg-[#EAFBF0] border-[#22C55E] font-bold text-[#14532D]"
                               : "bg-white border-[#CDE9D5] text-[#1E4D31]"
                           }`}
                         >
-                          <p>{tp.name}</p>
-                          <p className="text-xs text-[#15803D]">
+                          <span>{tp.name}</span>
+                          <span className="text-xs font-bold text-[#15803D]">
                             +{formatMoney(tp.price, settings.currency_code)}
-                          </p>
+                          </span>
                         </button>
                       );
                     })}
@@ -515,100 +817,6 @@ export function OrderPublicClient({
                 {t.pos.addToCartBtn}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cart Review Drawer */}
-      {cartOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
-              <h3 className="font-extrabold text-lg text-[#14532D]">
-                {t.orderPublic.yourOrder}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setCartOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {errorMsg && (
-              <p className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700">
-                {errorMsg}
-              </p>
-            )}
-
-            <div className="space-y-2.5 max-h-64 overflow-y-auto">
-              {cart.map((item, idx) => {
-                const topSum = item.toppings.reduce((s, tp) => s + tp.price, 0);
-                const lineTotal = (item.unitPrice + topSum) * item.quantity;
-                return (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5] flex items-start justify-between gap-2"
-                  >
-                    <div>
-                      <p className="font-bold text-sm text-[#14532D]">
-                        {item.quantity}x {item.productName}
-                        {item.variantName ? ` (${item.variantName})` : ""}
-                      </p>
-                      {item.toppings.length > 0 && (
-                        <p className="text-xs text-[#2F6844]">
-                          + {item.toppings.map((tp) => tp.name).join(", ")}
-                        </p>
-                      )}
-                      {item.note && (
-                        <p className="text-xs text-amber-800 italic">
-                          {item.note}
-                        </p>
-                      )}
-                      <p className="text-xs font-extrabold text-[#15803D] mt-1">
-                        {formatMoney(lineTotal, settings.currency_code)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCart((prev) => prev.filter((_, i) => i !== idx))
-                      }
-                      className="p-1.5 text-red-600 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            <input
-              type="text"
-              value={orderNote}
-              onChange={(e) => setOrderNote(e.target.value)}
-              placeholder={t.orderPublic.orderNotePlaceholder}
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-[#CDE9D5]"
-            />
-
-            <div className="flex justify-between items-center text-base font-extrabold text-[#14532D] pt-1">
-              <span>{t.orderPublic.totalLabel}</span>
-              <span className="text-xl text-[#15803D]">
-                {formatMoney(totalAmount, settings.currency_code)}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              disabled={submitting || cart.length === 0}
-              onClick={handleSubmitOrder}
-              className="w-full py-3.5 rounded-2xl btn-3d-green text-base font-extrabold cursor-pointer disabled:opacity-60"
-            >
-              {submitting
-                ? t.orderPublic.sending
-                : t.orderPublic.sendOrderBtn}
-            </button>
           </div>
         </div>
       )}
