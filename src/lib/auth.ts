@@ -22,6 +22,11 @@ export interface ShopSettings {
   currency_symbol: string;
   qr_image_url: string;
   bank_info: string;
+  qr_mode?: "image" | "vietqr" | "emvco";
+  vietqr_bank_id?: string;
+  vietqr_account_no?: string;
+  vietqr_account_name?: string;
+  emvco_base_qr?: string;
 }
 
 export const getAuthContext = cache(async () => {
@@ -51,9 +56,7 @@ export const getAuthContext = cache(async () => {
       .single(),
     supabase
       .from("shop_settings")
-      .select(
-        "id, shop_name, address, phone, currency_code, currency_symbol, qr_image_url, bank_info"
-      )
+      .select("*")
       .eq("id", 1)
       .single(),
   ]);

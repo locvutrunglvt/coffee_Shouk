@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
@@ -13,6 +14,8 @@ import {
   ImagePlus,
   Layers,
   Plus,
+  Printer,
+  QrCode,
   Trash2,
   X,
 } from "lucide-react";
@@ -119,6 +122,39 @@ export function MenuClient({
 
   const [newTableName, setNewTableName] = useState("");
   const [newTableZone, setNewTableZone] = useState("Trong nhà");
+  const [qrTableModal, setQrTableModal] = useState<{
+    table: TableRow;
+    url: string;
+    dataUrl: string;
+  } | null>(null);
+
+  async function openTableQr(tb: TableRow) {
+    const orderUrl = `${window.location.origin}/order?table=${tb.id}`;
+    const dataUrl = await QRCode.toDataURL(orderUrl, {
+      width: 280,
+      margin: 2,
+      color: { dark: "#14532D", light: "#FFFFFF" },
+    });
+    setQrTableModal({ table: tb, url: orderUrl, dataUrl });
+  }
+
+  function printTableQr() {
+    if (!qrTableModal) return;
+    const win = window.open("", "_blank", "width=380,height=520");
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>${qrTableModal.table.name}</title>
+      <style>body{font-family:sans-serif;text-align:center;padding:24px;color:#14532D}img{width:240px;height:240px;border:2px solid #CDE9D5;border-radius:16px;padding:8px}</style>
+      </head><body>
+      <h2>Tà Ơi Coffee</h2>
+      <h3>${qrTableModal.table.name} (${qrTableModal.table.zone})</h3>
+      <img src="${qrTableModal.dataUrl}" />
+      <p style="font-size:13px;margin-top:12px">${t.menu.tableQrDesc}</p>
+      <script>window.print();</script>
+      </body></html>
+    `);
+    win.document.close();
+  }
 
   function openNewProductModal() {
     setEditingProductId(null);
@@ -722,28 +758,80 @@ export function MenuClient({
               </button>
             </form>
           )}
-          <div className="card-3d rounded-2xl p-5 grid grid-cols-2 sm:grid-cols-3 gap-2.5 h-fit">
+          <div className="card-3d rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-fit">
             {tables.map((tb) => (
               <div
                 key={tb.id}
-                className="p-3 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] flex items-center justify-between"
+                className="p-3 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] flex items-center justify-between gap-2"
               >
                 <div>
-                  <p className="font-semibold text-sm text-[#14532D]">{tb.name}</p>
-                  <p className="text-[11px] text-[#2F6844]">{tb.zone}</p>
+                  <p className="font-bold text-sm text-[#14532D]">{tb.name}</p>
+                  <p className="text-xs text-[#2F6844]">{tb.zone}</p>
                 </div>
-                {canEdit && (
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => deleteTable(tb.id)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                    onClick={() => openTableQr(tb)}
+                    title={t.menu.printTableQr}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#CDE9D5] text-xs font-bold text-[#15803D] hover:bg-[#EAFBF0] cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>QR</span>
                   </button>
-                )}
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => deleteTable(tb.id)}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
+
+          {qrTableModal && (
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+              <div className="card-3d rounded-3xl max-w-sm w-full p-6 text-center space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-extrabold text-base text-[#14532D]">
+                    {t.menu.tableQrTitle}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setQrTableModal(null)}
+                    className="p-1.5 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-sm font-bold text-[#15803D]">
+                  {qrTableModal.table.name} ({qrTableModal.table.zone})
+                </p>
+                <Image
+                  src={qrTableModal.dataUrl}
+                  alt={qrTableModal.table.name}
+                  width={240}
+                  height={240}
+                  className="w-56 h-56 mx-auto rounded-2xl border-2 border-[#CDE9D5] p-2 bg-white"
+                />
+                <p className="text-xs text-[#2F6844]">{t.menu.tableQrDesc}</p>
+                <p className="text-[11px] font-mono break-all bg-[#F2FBF4] p-2 rounded-xl border border-[#CDE9D5]">
+                  {qrTableModal.url}
+                </p>
+                <button
+                  type="button"
+                  onClick={printTableQr}
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl btn-3d-green text-sm font-bold cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>{t.menu.printTableQr}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -5,7 +5,7 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/locale")) {
+  if (pathname.startsWith("/api/locale") || pathname.startsWith("/order")) {
     return NextResponse.next();
   }
 

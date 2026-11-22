@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateTimeVN, formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
+import { PaymentQrCard } from "@/components/PaymentQrCard";
 import {
   deductStockAndSyncShift,
   type CartItemInput,
@@ -109,6 +110,30 @@ export function PosClient({
   const [pickedToppings, setPickedToppings] = useState<CartTopping[]>([]);
   const [pickedQty, setPickedQty] = useState(1);
   const [pickedNote, setPickedNote] = useState("");
+
+  // Collect unpaid order modal
+  const [collectingOrder, setCollectingOrder] = useState<RecentOrderRow | null>(
+    null
+  );
+  const [collectMethod, setCollectMethod] = useState<PaymentMethod>("qr_transfer");
+  const [collectingBusy, setCollectingBusy] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const ch = supabase
+      .channel("pos-recent-orders")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => {
+          refreshRecentOrders();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   function openCustomize(p: ProductRow) {
     if (!p.is_available) return;
@@ -256,42 +281,49 @@ export function PosClient({
     }
   }
 
-  async function handleCollectUnpaid(order: RecentOrderRow) {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        payment_status: "paid",
-        payment_method: paymentMethod,
-        shift_id: openShiftId,
-      })
-      .eq("id", order.id);
+  async function handleConfirmCollect() {
+    if (!collectingOrder || collectingBusy) return;
+    setCollectingBusy(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("orders")
+        .update({
+          payment_status: "paid",
+          payment_method: collectMethod,
+          shift_id: openShiftId,
+        })
+        .eq("id", collectingOrder.id);
 
-    if (!error) {
-      const mappedItems: CartItemInput[] = (order.order_items ?? [])
-        .filter((i) => i.product_id)
-        .map((i) => ({
-          productId: i.product_id!,
-          variantId: i.variant_id,
-          productName: i.product_name,
-          variantName: i.variant_name,
-          quantity: i.quantity,
-          unitPrice: Number(i.unit_price),
-          toppings: Array.isArray(i.toppings_json) ? i.toppings_json : [],
-          note: i.note,
-        }));
+      if (!error) {
+        const mappedItems: CartItemInput[] = (collectingOrder.order_items ?? [])
+          .filter((i) => i.product_id)
+          .map((i) => ({
+            productId: i.product_id!,
+            variantId: i.variant_id,
+            productName: i.product_name,
+            variantName: i.variant_name,
+            quantity: i.quantity,
+            unitPrice: Number(i.unit_price),
+            toppings: Array.isArray(i.toppings_json) ? i.toppings_json : [],
+            note: i.note,
+          }));
 
-      await deductStockAndSyncShift(supabase, {
-        orderId: order.id,
-        orderNumber: order.order_number,
-        items: mappedItems,
-        paymentMethod,
-        totalAmount: Number(order.total_amount),
-        shiftId: openShiftId,
-        userId: profile.id,
-      });
+        await deductStockAndSyncShift(supabase, {
+          orderId: collectingOrder.id,
+          orderNumber: collectingOrder.order_number,
+          items: mappedItems,
+          paymentMethod: collectMethod,
+          totalAmount: Number(collectingOrder.total_amount),
+          shiftId: openShiftId,
+          userId: profile.id,
+        });
 
-      await refreshRecentOrders();
+        setCollectingOrder(null);
+        await refreshRecentOrders();
+      }
+    } finally {
+      setCollectingBusy(false);
     }
   }
 
@@ -710,29 +742,11 @@ export function PosClient({
                   )}
 
                   {paymentMethod === "qr_transfer" && (
-                    <div className="bg-[#F2FBF4] p-3 rounded-xl text-center space-y-1.5 border border-[#CDE9D5]">
-                      <p className="text-[11px] text-[#2F6844]">
-                        {t.pos.qrScanHint}
-                      </p>
-                      {settings.qr_image_url ? (
-                        <Image
-                          src={settings.qr_image_url}
-                          alt="Payment QR"
-                          width={140}
-                          height={140}
-                          className="w-36 h-36 mx-auto object-contain rounded-xl bg-white p-1 border border-[#CDE9D5]"
-                        />
-                      ) : (
-                        <p className="text-[11px] text-amber-800">
-                          {t.pos.noQrConfigured}
-                        </p>
-                      )}
-                      {settings.bank_info && (
-                        <p className="text-xs font-semibold text-[#14532D]">
-                          {settings.bank_info}
-                        </p>
-                      )}
-                    </div>
+                    <PaymentQrCard
+                      settings={settings}
+                      amount={totalDue}
+                      reference={`TaOi${recentOrders[0] ? recentOrders[0].order_number + 1 : ""}`}
+                    />
                   )}
                 </>
               )}
@@ -818,7 +832,10 @@ export function PosClient({
                         o.status !== "cancelled" && (
                           <button
                             type="button"
-                            onClick={() => handleCollectUnpaid(o)}
+                            onClick={() => {
+                              setCollectingOrder(o);
+                              setCollectMethod("qr_transfer");
+                            }}
                             className="px-2.5 py-1 rounded-lg bg-[#16A34A] text-white font-semibold cursor-pointer"
                           >
                             {t.pos.collectPayment}
@@ -986,6 +1003,74 @@ export function PosClient({
                 {t.pos.addToCartBtn}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* COLLECT UNPAID ORDER MODAL (WITH DYNAMIC QR) */}
+      {collectingOrder && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="card-3d rounded-3xl w-full max-w-sm p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
+              <h3 className="font-extrabold text-base text-[#14532D]">
+                {t.pos.collectPayment} #{collectingOrder.order_number}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setCollectingOrder(null)}
+                className="p-1.5 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  ["cash", t.pos.cash, Banknote],
+                  ["qr_transfer", t.pos.qrTransfer, QrCode],
+                  ["card", t.pos.card, CreditCard],
+                ] as const
+              ).map(([m, label, Icon]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setCollectMethod(m)}
+                  className={`flex flex-col items-center py-2 px-1 rounded-xl border text-xs font-bold cursor-pointer ${
+                    collectMethod === m
+                      ? "bg-[#16A34A] text-white border-[#16A34A]"
+                      : "bg-white text-[#1E4D31] border-[#CDE9D5]"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 mb-0.5" />
+                  <span className="truncate">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {collectMethod === "qr_transfer" ? (
+              <PaymentQrCard
+                settings={settings}
+                amount={Number(collectingOrder.total_amount)}
+                reference={`TaOi${collectingOrder.order_number}`}
+              />
+            ) : (
+              <div className="p-4 rounded-2xl bg-[#F2FBF4] border border-[#CDE9D5] text-center">
+                <p className="text-xs text-[#2F6844]">{t.pos.totalDue}</p>
+                <p className="text-2xl font-extrabold text-[#15803D]">
+                  {formatMoney(collectingOrder.total_amount, settings.currency_code)}
+                </p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              disabled={collectingBusy}
+              onClick={handleConfirmCollect}
+              className="w-full py-3 rounded-2xl btn-3d-green text-sm font-extrabold cursor-pointer disabled:opacity-60"
+            >
+              {collectingBusy ? t.common.saving : t.common.confirm}
+            </button>
           </div>
         </div>
       )}
