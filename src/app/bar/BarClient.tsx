@@ -130,7 +130,7 @@ export function BarClient({ initialOrders }: BarClientProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex gap-1 bg-white p-1 rounded-xl border border-[#E7DDD0]">
+        <div className="inline-flex gap-1 bg-white p-1 rounded-xl border border-[#CDE9D5]">
           {(
             [
               ["pending", t.bar.pendingTab],
@@ -144,10 +144,10 @@ export function BarClient({ initialOrders }: BarClientProps) {
                 key={statusKey}
                 type="button"
                 onClick={() => setTab(statusKey)}
-                className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-lg text-sm sm:text-base font-semibold cursor-pointer flex items-center gap-1.5 ${
                   tab === statusKey
-                    ? "bg-[#4A2C18] text-white"
-                    : "text-[#5C4938] hover:bg-[#F3ECE2]"
+                    ? "bg-[#16A34A] text-white"
+                    : "text-[#1E4D31] hover:bg-[#EAFBF0]"
                 }`}
               >
                 <span>{label}</span>
@@ -155,7 +155,7 @@ export function BarClient({ initialOrders }: BarClientProps) {
                   className={`px-1.5 py-0.5 rounded-full text-[11px] ${
                     tab === statusKey
                       ? "bg-white/20 text-white"
-                      : "bg-[#F3ECE2] text-[#4A2C18]"
+                      : "bg-[#EAFBF0] text-[#14532D]"
                   }`}
                 >
                   {count}
@@ -174,7 +174,7 @@ export function BarClient({ initialOrders }: BarClientProps) {
             type="button"
             onClick={fetchActiveOrders}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E7DDD0] bg-white text-xs font-medium cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#CDE9D5] bg-white text-xs font-medium cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             <span>{t.common.refresh}</span>
@@ -183,7 +183,7 @@ export function BarClient({ initialOrders }: BarClientProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E7DDD0] p-10 text-center space-y-2 text-[#7B6554]">
+        <div className="card-3d rounded-2xl p-10 text-center space-y-2 text-[#2F6844]">
           <Coffee className="w-10 h-10 mx-auto opacity-40" />
           <p className="text-sm">{t.bar.noOrders}</p>
         </div>
@@ -192,19 +192,19 @@ export function BarClient({ initialOrders }: BarClientProps) {
           {filtered.map((o) => (
             <div
               key={o.id}
-              className="bg-white rounded-2xl border border-[#E7DDD0] p-4 flex flex-col justify-between space-y-4 shadow-xs"
+              className="card-3d rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-xs"
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between border-b border-[#F3ECE2] pb-2.5">
+                <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-2.5">
                   <div>
-                    <span className="text-base font-bold text-[#4A2C18]">
+                    <span className="text-base font-bold text-[#14532D]">
                       #{o.order_number}
                     </span>
-                    <span className="ml-2 px-2 py-0.5 rounded-lg bg-[#F3ECE2] text-xs font-semibold text-[#4A2C18]">
+                    <span className="ml-2 px-2 py-0.5 rounded-lg bg-[#EAFBF0] text-xs font-semibold text-[#14532D]">
                       {orderTypeLabel(o)}
                     </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-xs text-[#7B6554]">
+                  <span className="inline-flex items-center gap-1 text-xs text-[#2F6844]">
                     <Clock className="w-3.5 h-3.5" />
                     {formatElapsed(o.created_at)}
                   </span>
@@ -214,17 +214,17 @@ export function BarClient({ initialOrders }: BarClientProps) {
                   {o.order_items.map((item) => (
                     <li
                       key={item.id}
-                      className="p-2.5 rounded-xl bg-[#FAF7F2] border border-[#F3ECE2]"
+                      className="p-2.5 rounded-xl bg-[#F2FBF4] border border-[#DDF3E4]"
                     >
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-bold text-sm text-[#4A2C18]">
+                        <span className="font-bold text-sm text-[#14532D]">
                           {item.quantity}x {item.product_name}
                           {item.variant_name ? ` (${item.variant_name})` : ""}
                         </span>
                       </div>
                       {Array.isArray(item.toppings_json) &&
                         item.toppings_json.length > 0 && (
-                          <p className="text-xs text-[#7B6554] mt-0.5">
+                          <p className="text-xs text-[#2F6844] mt-0.5">
                             + {item.toppings_json.map((tp) => tp.name).join(", ")}
                           </p>
                         )}
@@ -244,12 +244,12 @@ export function BarClient({ initialOrders }: BarClientProps) {
                 )}
               </div>
 
-              <div className="pt-2 border-t border-[#F3ECE2]">
+              <div className="pt-2 border-t border-[#DDF3E4]">
                 {o.status === "pending" && (
                   <button
                     type="button"
                     onClick={() => updateStatus(o.id, "preparing")}
-                    className="w-full py-2.5 rounded-xl bg-[#C97B36] hover:bg-[#B46B2B] text-white text-sm font-semibold cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white text-sm font-semibold cursor-pointer"
                   >
                     {t.bar.startMaking}
                   </button>
@@ -267,7 +267,7 @@ export function BarClient({ initialOrders }: BarClientProps) {
                   <button
                     type="button"
                     onClick={() => updateStatus(o.id, "completed")}
-                    className="w-full py-2.5 rounded-xl bg-[#4A2C18] hover:bg-[#3A2212] text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>{t.bar.completeOrder}</span>

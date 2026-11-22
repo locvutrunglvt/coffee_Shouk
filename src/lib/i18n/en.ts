@@ -414,4 +414,100 @@ export const en: Dictionary = {
     roleUpdated: "Staff role updated.",
     roleError: "Failed to update staff role.",
   },
+  guides: {
+    toggleOpen: "Show step-by-step guide",
+    toggleClose: "Hide guide",
+    tipLabel: "Quick tip",
+    dashboard: {
+      title: "How to use the Overview Dashboard",
+      steps: [
+        "Check the 4 top cards at a glance: Today's revenue, Current shift status, Low stock alerts, and Upcoming recurring bills.",
+        "Tap any colorful 3D feature block below to jump straight to POS, Shifts, Stock, or Expenses.",
+        "Review Low Stock alerts every morning so you can restock coffee beans, milk, and cups before peak hours.",
+      ],
+      tip: "You can switch between Vietnamese, English, and Lao anytime using the language toggle in the menu.",
+    },
+    pos: {
+      title: "How to use POS Sales (Cashier & Waitstaff)",
+      steps: [
+        "Pick the order type: Dine-in (with table), Take-away, or Delivery.",
+        "Tap any drink card to select Size (S/M/L), Toppings, and special notes (less ice, 50% sugar) then add to order.",
+        "For Cashiers: choose Cash (enter cash received to auto-calculate change) or QR Transfer → tap 'Pay & Send to Bar'. Shift totals and ingredient stock update automatically.",
+        "For Waitstaff on mobile: tap 'Send order (Pay later)' so the Bar starts making drinks immediately; Cashier collects payment later in Recent Orders.",
+      ],
+      tip: "Open a shift in Shifts & Cash Balance before taking cash payments so end-of-day cash reconciliation matches.",
+    },
+    bar: {
+      title: "How to use Bar Display (KDS)",
+      steps: [
+        "New orders from POS appear automatically in the 'Pending' tab in real time without refreshing.",
+        "Watch for highlighted yellow notes (less ice, no sugar) and toppings under each drink.",
+        "3-tap workflow: Tap 'Start making' → when done tap 'Mark ready' → when handed to customer tap 'Served / Done'.",
+      ],
+      tip: "If an item runs out mid-shift, Baristas can open Menu to toggle 'Sold out' right away.",
+    },
+    shifts: {
+      title: "How to use Shifts & Cash Drawer Balance",
+      steps: [
+        "Start of shift: enter the starting cash float in the drawer and tap 'Open new shift'.",
+        "During shift: if cash is taken from the drawer to buy ice or milk, log it in 'Petty cash expense' so expected cash stays accurate.",
+        "End of shift: count all physical cash in the drawer and enter 'Actual cash counted'. The app highlights Balanced, Cash over, or Cash short before closing.",
+      ],
+      tip: "QR transfer sales are tracked separately from drawer cash so cash counts never get mixed up.",
+    },
+    menu: {
+      title: "How to manage Menu & Drink Photos",
+      steps: [
+        "Step 1: Create Categories first in the 'Categories' tab (e.g. Coffee, Milk Tea, Fruit Tea).",
+        "Step 2: In 'Drinks & Sizes', tap 'Add drink / item' and upload a clear photo from phone or PC (auto-compressed).",
+        "Step 3: Add Sizes (S, M, L) with individual prices right inside the form. Manage Toppings and Tables in the remaining tabs.",
+      ],
+      tip: "Clear drink photos help new staff pick items much faster on both mobile and PC POS.",
+    },
+    inventory: {
+      title: "How to manage Inventory, Imports & Drink Recipes",
+      steps: [
+        "Current Stock tab: add ingredients with Purchase Unit (e.g. Bag 1kg), Recipe Unit (g/ml/pcs), and Conversion Rate (1000).",
+        "Stock Import tab: log incoming stock in purchase units and prices. Stock converts to g/ml and updates weighted average cost automatically.",
+        "Drink Recipes tab: link each drink & size to its ingredient quantities. Every POS sale deducts exact stock automatically.",
+      ],
+      tip: "Check Estimated COGS and Gross Margin % below each recipe to price drinks profitably.",
+    },
+    stockTake: {
+      title: "How to run Stock-take & Inventory Balance",
+      steps: [
+        "Tap 'Start new stock-take' to snapshot current theoretical stock for all active ingredients.",
+        "Weigh or count physical stock on shelves, enter 'Actual counted' and add a reason if there is a variance.",
+        "Review variance quantity & loss value, then tap 'Finalize & Balance Stock' to sync system stock to actual count.",
+      ],
+      tip: "Finalized stock-take losses automatically feed into the monthly Profit & Loss report.",
+    },
+    expenses: {
+      title: "How to track Electricity, Water, Rent & Recurring Bills",
+      steps: [
+        "Electricity & Water: pick the category, enter Previous & Current meter readings plus unit rate, then tap 'Calculate from meter readings'.",
+        "Shop Rent (multi-month payments): enter total paid and set 'Allocate across how many months?' (e.g. 3 months → 1/3 counted per month in P&L).",
+        "Recurring Bills tab: set rent or wifi due dates and click 'Record payment now' with one tap when paid.",
+      ],
+      tip: "You can upload or attach receipt photos straight from your phone camera.",
+    },
+    reports: {
+      title: "How to read Profit & Loss (P&L) & Export Excel",
+      steps: [
+        "Pick a month at the top to view Net Revenue, Ingredient COGS, Stock-take Loss, and Allocated Operating Expenses.",
+        "Track Net Profit and Daily Break-even Target to see how much the shop needs to sell each day.",
+        "Click 'Export Excel with Formulas (.xlsx)' to download a 4-sheet workbook (P&L, Orders, Expenses, StockMovements) connected via live SUM/SUMIF formulas.",
+      ],
+      tip: "Exported Excel headers automatically match your active language (VI / EN / LO).",
+    },
+    settings: {
+      title: "How to configure Shop Settings & Staff Roles",
+      steps: [
+        "Set your shop name, address, phone, and display currency (LAK ₭, VND ₫, THB ฿, or USD $).",
+        "Upload your payment QR image (LaoQR / BCEL One / VietQR) and bank info so cashiers can show it at checkout.",
+        "When new staff create accounts on the login page, assign their role (Cashier, Barista, Manager) or lock inactive accounts below.",
+      ],
+      tip: "The first registered user is always Owner (Admin) and cannot accidentally lock themselves out.",
+    },
+  },
 };

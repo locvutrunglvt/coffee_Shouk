@@ -135,16 +135,16 @@ export function SettingsClient({
 
       <form
         onSubmit={handleSaveSettings}
-        className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4"
+        className="card-3d rounded-2xl p-5 space-y-4"
       >
-        <div className="flex items-center gap-2 text-[#4A2C18] font-bold">
-          <Store className="w-5 h-5 text-[#C97B36]" />
+        <div className="flex items-center gap-2 text-[#14532D] font-bold">
+          <Store className="w-5 h-5 text-[#15803D]" />
           <h2>{t.settings.shopInfoTitle}</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.shopName}
             </label>
             <input
@@ -154,12 +154,12 @@ export function SettingsClient({
               onChange={(e) =>
                 setSettings({ ...settings, shop_name: e.target.value })
               }
-              className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.currencyLabel}
             </label>
             <select
@@ -172,7 +172,7 @@ export function SettingsClient({
                   currency_symbol: CURRENCIES[code].symbol,
                 });
               }}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0] bg-white"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
             >
               {Object.values(CURRENCIES).map((c) => (
                 <option key={c.code} value={c.code}>
@@ -183,31 +183,31 @@ export function SettingsClient({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.shopPhone}
             </label>
             <input
               type="text"
               value={settings.phone ?? ""}
               onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.shopAddress}
             </label>
             <input
               type="text"
               value={settings.address ?? ""}
               onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.bankInfo}
             </label>
             <input
@@ -217,12 +217,12 @@ export function SettingsClient({
               onChange={(e) =>
                 setSettings({ ...settings, bank_info: e.target.value })
               }
-              className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.settings.qrImageUrl}
             </label>
             <div className="flex items-center gap-2">
@@ -233,9 +233,9 @@ export function SettingsClient({
                 onChange={(e) =>
                   setSettings({ ...settings, qr_image_url: e.target.value })
                 }
-                className="flex-1 px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="flex-1 px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
-              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E7DDD0] bg-[#FAF7F2] hover:bg-[#F3ECE2] text-xs font-medium cursor-pointer shrink-0">
+              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] hover:bg-[#EAFBF0] text-xs font-medium cursor-pointer shrink-0">
                 <Upload className="w-3.5 h-3.5" />
                 <span>{uploadingQr ? t.common.loading : "QR"}</span>
                 <input
@@ -253,7 +253,7 @@ export function SettingsClient({
                   alt="QR"
                   width={112}
                   height={112}
-                  className="w-28 h-28 object-contain rounded-xl border border-[#E7DDD0] bg-white p-1"
+                  className="w-28 h-28 object-contain rounded-xl border border-[#CDE9D5] bg-white p-1"
                 />
               </div>
             )}
@@ -263,35 +263,35 @@ export function SettingsClient({
         <button
           type="submit"
           disabled={savingSettings}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold hover:bg-[#3A2212] cursor-pointer disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-semibold hover:bg-[#15803D] cursor-pointer disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
           <span>{savingSettings ? t.common.saving : t.settings.saveSettingsBtn}</span>
         </button>
       </form>
 
-      <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+      <div className="card-3d rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2 text-[#4A2C18] font-bold">
-            <Users className="w-5 h-5 text-[#C97B36]" />
+          <div className="flex items-center gap-2 text-[#14532D] font-bold">
+            <Users className="w-5 h-5 text-[#15803D]" />
             <h2>
               {t.settings.staffTitle} ({profiles.length})
             </h2>
           </div>
-          <p className="text-xs text-[#7B6554]">{t.settings.staffHint}</p>
+          <p className="text-xs text-[#2F6844]">{t.settings.staffHint}</p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="border-b border-[#E7DDD0] text-xs text-[#7B6554]">
+              <tr className="border-b border-[#CDE9D5] text-xs text-[#2F6844]">
                 <th className="py-2.5 pr-4">{t.settings.colName}</th>
                 <th className="py-2.5 pr-4">{t.settings.colEmail}</th>
                 <th className="py-2.5 pr-4">{t.settings.colRole}</th>
                 <th className="py-2.5 pr-4">{t.settings.colStatus}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F3ECE2]">
+            <tbody className="divide-y divide-[#DDF3E4]">
               {profiles.map((p) => {
                 const isSelf = p.id === currentUserId;
                 return (
@@ -299,12 +299,12 @@ export function SettingsClient({
                     <td className="py-3 pr-4 font-medium">
                       {p.full_name || p.email}
                       {isSelf && (
-                        <span className="ml-2 text-[11px] text-[#C97B36] font-semibold">
+                        <span className="ml-2 text-[11px] text-[#15803D] font-semibold">
                           {t.settings.youTag}
                         </span>
                       )}
                     </td>
-                    <td className="py-3 pr-4 text-xs text-[#7B6554]">{p.email}</td>
+                    <td className="py-3 pr-4 text-xs text-[#2F6844]">{p.email}</td>
                     <td className="py-3 pr-4">
                       <select
                         disabled={isSelf || savingUserId === p.id}
@@ -312,7 +312,7 @@ export function SettingsClient({
                         onChange={(e) =>
                           handleUpdateRole(p.id, e.target.value as UserRole, p.is_active)
                         }
-                        className="px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white disabled:opacity-60"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white disabled:opacity-60"
                       >
                         {ROLES.map((r) => (
                           <option key={r} value={r}>

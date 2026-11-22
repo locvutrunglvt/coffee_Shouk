@@ -196,16 +196,16 @@ export function StockTakeClient({
           type="button"
           disabled={busy || ingredients.length === 0}
           onClick={handleCreateDraft}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
         >
           <Plus className="w-4 h-4" />
           <span>{t.stockTake.createBtn}</span>
         </button>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+        <div className="card-3d rounded-2xl p-5 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 font-bold text-[#4A2C18]">
-              <ClipboardCheck className="w-5 h-5 text-[#C97B36]" />
+            <div className="flex items-center gap-2 font-bold text-[#14532D]">
+              <ClipboardCheck className="w-5 h-5 text-[#15803D]" />
               <span>
                 {t.stockTake.activeDraftTitle} ({draft.take_date})
               </span>
@@ -216,9 +216,9 @@ export function StockTakeClient({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.inventory.ingredientName}</th>
                   <th className="py-2 pr-3">{t.stockTake.systemStock}</th>
                   <th className="py-2 pr-3">{t.stockTake.actualStock}</th>
@@ -227,10 +227,10 @@ export function StockTakeClient({
                   <th className="py-2 pr-3">{t.common.note}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {items.map((it) => (
                   <tr key={it.id}>
-                    <td className="py-2.5 pr-3 font-semibold text-[#4A2C18]">
+                    <td className="py-2.5 pr-3 font-semibold text-[#14532D]">
                       {it.ingredients?.name}
                     </td>
                     <td className="py-2.5 pr-3">
@@ -242,7 +242,7 @@ export function StockTakeClient({
                         step="any"
                         value={it.actual_stock}
                         onChange={(e) => updateLocalItem(it.id, e.target.value)}
-                        className="w-28 px-2.5 py-1.5 rounded-lg border border-[#E7DDD0] font-semibold"
+                        className="w-28 px-2.5 py-1.5 rounded-lg border border-[#CDE9D5] font-semibold"
                       />
                     </td>
                     <td
@@ -272,7 +272,7 @@ export function StockTakeClient({
                           )
                         }
                         placeholder={t.stockTake.reasonPlaceholder}
-                        className="w-44 px-2.5 py-1.5 rounded-lg border border-[#E7DDD0]"
+                        className="w-44 px-2.5 py-1.5 rounded-lg border border-[#CDE9D5]"
                       />
                     </td>
                   </tr>
@@ -281,8 +281,8 @@ export function StockTakeClient({
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#F3ECE2]">
-            <div className="text-sm font-bold text-[#4A2C18]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#DDF3E4]">
+            <div className="text-base font-extrabold text-[#14532D]">
               {t.stockTake.varianceValue}:{" "}
               <span
                 className={
@@ -296,7 +296,7 @@ export function StockTakeClient({
               type="button"
               disabled={busy}
               onClick={handleFinalize}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-bold cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-bold cursor-pointer disabled:opacity-60"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{t.stockTake.finalizeBtn}</span>
@@ -306,23 +306,23 @@ export function StockTakeClient({
       )}
 
       {/* History */}
-      <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3">
-        <h2 className="font-bold text-sm text-[#4A2C18]">
+      <div className="card-3d rounded-2xl p-5 space-y-3">
+        <h2 className="font-bold text-sm text-[#14532D]">
           {t.stockTake.historyTitle}
         </h2>
         {history.length === 0 ? (
-          <p className="text-xs text-[#7B6554]">{t.common.noData}</p>
+          <p className="text-xs text-[#2F6844]">{t.common.noData}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.common.date}</th>
                   <th className="py-2 pr-3">{t.common.status}</th>
                   <th className="py-2 pr-3">{t.stockTake.varianceValue}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {history.map((h) => (
                   <tr key={h.id}>
                     <td className="py-2.5 pr-3">{h.take_date}</td>

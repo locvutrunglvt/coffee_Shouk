@@ -277,14 +277,14 @@ export function ExpensesClient({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex gap-1 bg-white p-1 rounded-xl border border-[#E7DDD0]">
+        <div className="inline-flex gap-1 bg-white p-1 rounded-xl border border-[#CDE9D5]">
           <button
             type="button"
             onClick={() => setTab("expenses")}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-sm sm:text-base font-medium cursor-pointer ${
               tab === "expenses"
-                ? "bg-[#4A2C18] text-white"
-                : "text-[#5C4938] hover:bg-[#F3ECE2]"
+                ? "bg-[#16A34A] text-white"
+                : "text-[#1E4D31] hover:bg-[#EAFBF0]"
             }`}
           >
             {t.expenses.expensesTab}
@@ -293,10 +293,10 @@ export function ExpensesClient({
             <button
               type="button"
               onClick={() => setTab("recurring")}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-sm sm:text-base font-medium cursor-pointer ${
                 tab === "recurring"
-                  ? "bg-[#4A2C18] text-white"
-                  : "text-[#5C4938] hover:bg-[#F3ECE2]"
+                  ? "bg-[#16A34A] text-white"
+                  : "text-[#1E4D31] hover:bg-[#EAFBF0]"
               }`}
             >
               {t.expenses.recurringTab}
@@ -305,12 +305,12 @@ export function ExpensesClient({
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs text-[#7B6554]">{t.expenses.filterMonth}:</label>
+          <label className="text-xs text-[#2F6844]">{t.expenses.filterMonth}:</label>
           <input
             type="month"
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+            className="px-3 py-1.5 text-sm rounded-xl border border-[#CDE9D5] bg-white"
           />
         </div>
       </div>
@@ -318,19 +318,19 @@ export function ExpensesClient({
       {tab === "expenses" && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-              <p className="text-xs text-[#7B6554]">
+            <div className="card-3d rounded-2xl p-4">
+              <p className="text-xs text-[#2F6844]">
                 {t.expenses.totalMonthCashOut} ({filterMonth})
               </p>
-              <p className="text-xl font-bold text-[#4A2C18] mt-1">
+              <p className="text-xl font-bold text-[#14532D] mt-1">
                 {formatMoney(cashOutMonth, currencyCode)}
               </p>
             </div>
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-              <p className="text-xs text-[#7B6554]">
+            <div className="card-3d rounded-2xl p-4">
+              <p className="text-xs text-[#2F6844]">
                 {t.expenses.allocatedMonthCost} ({filterMonth})
               </p>
-              <p className="text-xl font-bold text-[#C97B36] mt-1">
+              <p className="text-xl font-bold text-[#15803D] mt-1">
                 {formatMoney(allocatedMonthCost, currencyCode)}
               </p>
             </div>
@@ -338,23 +338,23 @@ export function ExpensesClient({
 
           <form
             onSubmit={handleAddExpense}
-            className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4"
+            className="card-3d rounded-2xl p-5 space-y-4"
           >
-            <div className="flex items-center gap-2 font-bold text-sm text-[#4A2C18]">
-              <Receipt className="w-5 h-5 text-[#C97B36]" />
+            <div className="flex items-center gap-2 font-bold text-sm text-[#14532D]">
+              <Receipt className="w-5 h-5 text-[#15803D]" />
               <h2>{t.expenses.addExpenseTitle}</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.expenseGroup}
                 </label>
                 <select
                   value={isAdmin ? group : "shift_petty_cash"}
                   disabled={!isAdmin}
                   onChange={(e) => setGroup(e.target.value as ExpenseGroup)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white disabled:opacity-60"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white disabled:opacity-60"
                 >
                   {EXPENSE_GROUPS.map((g) => (
                     <option key={g} value={g}>
@@ -365,7 +365,7 @@ export function ExpensesClient({
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.expenseTitle}
                 </label>
                 <input
@@ -374,12 +374,12 @@ export function ExpensesClient({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={t.expenses.expenseTitlePlaceholder}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.amount} ({currencyCode})
                 </label>
                 <input
@@ -388,15 +388,15 @@ export function ExpensesClient({
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] font-semibold"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] font-semibold"
                 />
               </div>
             </div>
 
             {isAdmin && isUtility && (
-              <div className="bg-[#FAF7F2] rounded-xl border border-[#E7DDD0] p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+              <div className="bg-[#F2FBF4] rounded-xl border border-[#CDE9D5] p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
                 <div>
-                  <label className="block text-[11px] text-[#7B6554] mb-1">
+                  <label className="block text-[11px] text-[#2F6844] mb-1">
                     {t.expenses.meterOld}
                   </label>
                   <input
@@ -404,11 +404,11 @@ export function ExpensesClient({
                     step="any"
                     value={meterOld}
                     onChange={(e) => setMeterOld(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#7B6554] mb-1">
+                  <label className="block text-[11px] text-[#2F6844] mb-1">
                     {t.expenses.meterNew}
                   </label>
                   <input
@@ -416,11 +416,11 @@ export function ExpensesClient({
                     step="any"
                     value={meterNew}
                     onChange={(e) => setMeterNew(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-[#7B6554] mb-1">
+                  <label className="block text-[11px] text-[#2F6844] mb-1">
                     {t.expenses.unitPrice}
                   </label>
                   <input
@@ -428,13 +428,13 @@ export function ExpensesClient({
                     step="any"
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={autoComputeUtilityAmount}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#C97B36] text-white text-xs font-semibold cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#16A34A] text-white text-xs font-semibold cursor-pointer"
                 >
                   <Calculator className="w-3.5 h-3.5" />
                   <span>
@@ -447,31 +447,31 @@ export function ExpensesClient({
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.expenseDate}
                 </label>
                 <input
                   type="date"
                   value={expenseDate}
                   onChange={(e) => setExpenseDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.billingMonth}
                 </label>
                 <input
                   type="month"
                   value={billingMonth}
                   onChange={(e) => setBillingMonth(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.allocatedMonths}
                 </label>
                 <input
@@ -480,12 +480,12 @@ export function ExpensesClient({
                   max="24"
                   value={allocatedMonths}
                   onChange={(e) => setAllocatedMonths(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.expenses.receiptUrl}
                 </label>
                 <div className="flex gap-1.5">
@@ -494,9 +494,9 @@ export function ExpensesClient({
                     value={receiptUrl}
                     onChange={(e) => setReceiptUrl(e.target.value)}
                     placeholder="https://..."
-                    className="flex-1 px-2.5 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                    className="flex-1 px-2.5 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                   />
-                  <label className="px-2.5 py-2 rounded-xl border border-[#E7DDD0] bg-[#FAF7F2] cursor-pointer flex items-center">
+                  <label className="px-2.5 py-2 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] cursor-pointer flex items-center">
                     <Upload className="w-3.5 h-3.5" />
                     <input
                       type="file"
@@ -507,7 +507,7 @@ export function ExpensesClient({
                   </label>
                 </div>
                 {uploadingReceipt && (
-                  <p className="text-[10px] text-[#7B6554] mt-0.5">
+                  <p className="text-[10px] text-[#2F6844] mt-0.5">
                     {t.common.loading}
                   </p>
                 )}
@@ -515,7 +515,7 @@ export function ExpensesClient({
             </div>
 
             {Number(allocatedMonths) > 1 && Number(amount) > 0 && (
-              <p className="text-xs text-[#C97B36] font-semibold">
+              <p className="text-xs text-[#15803D] font-semibold">
                 {t.expenses.allocatedPerMonth}:{" "}
                 {formatMoney(
                   Number(amount) / Number(allocatedMonths),
@@ -527,17 +527,17 @@ export function ExpensesClient({
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
             >
               <Plus className="w-4 h-4" />
               <span>{t.expenses.addExpenseBtn}</span>
             </button>
           </form>
 
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 overflow-x-auto">
-            <table className="w-full text-xs text-left">
+          <div className="card-3d rounded-2xl p-5 overflow-x-auto">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.common.date}</th>
                   <th className="py-2 pr-3">{t.expenses.expenseGroup}</th>
                   <th className="py-2 pr-3">{t.expenses.expenseTitle}</th>
@@ -546,7 +546,7 @@ export function ExpensesClient({
                   <th className="py-2 pr-3">{t.common.actions}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {monthRows.map((exp) => {
                   const perMonth =
                     Number(exp.amount) /
@@ -555,14 +555,14 @@ export function ExpensesClient({
                     <tr key={exp.id}>
                       <td className="py-2.5 pr-3">{exp.expense_date}</td>
                       <td className="py-2.5 pr-3">
-                        <span className="px-2 py-0.5 rounded-full bg-[#F3ECE2] text-[#4A2C18] font-medium">
+                        <span className="px-2 py-0.5 rounded-full bg-[#EAFBF0] text-[#14532D] font-medium">
                           {t.expenses.groups[exp.expense_group]}
                         </span>
                       </td>
                       <td className="py-2.5 pr-3">
-                        <p className="font-semibold text-[#4A2C18]">{exp.title}</p>
+                        <p className="font-semibold text-[#14532D]">{exp.title}</p>
                         {exp.meter_old !== null && exp.meter_new !== null && (
-                          <p className="text-[11px] text-[#7B6554]">
+                          <p className="text-[11px] text-[#2F6844]">
                             {exp.meter_old} → {exp.meter_new} (
                             {Number(exp.meter_new) - Number(exp.meter_old)})
                           </p>
@@ -571,7 +571,7 @@ export function ExpensesClient({
                       <td className="py-2.5 pr-3 font-bold">
                         {formatMoney(exp.amount, currencyCode)}
                       </td>
-                      <td className="py-2.5 pr-3 text-[#C97B36] font-semibold">
+                      <td className="py-2.5 pr-3 text-[#15803D] font-semibold">
                         {formatMoney(perMonth, currencyCode)}
                         {exp.allocated_months > 1
                           ? ` (${exp.allocated_months}m)`
@@ -611,10 +611,10 @@ export function ExpensesClient({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <form
             onSubmit={handleAddRecurring}
-            className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+            className="card-3d rounded-2xl p-5 space-y-3 h-fit"
           >
-            <h2 className="font-bold text-sm text-[#4A2C18] flex items-center gap-2">
-              <CalendarClock className="w-4 h-4 text-[#C97B36]" />
+            <h2 className="font-bold text-sm text-[#14532D] flex items-center gap-2">
+              <CalendarClock className="w-4 h-4 text-[#15803D]" />
               <span>{t.expenses.addRecurringTitle}</span>
             </h2>
             <input
@@ -623,13 +623,13 @@ export function ExpensesClient({
               value={recTitle}
               onChange={(e) => setRecTitle(e.target.value)}
               placeholder={t.expenses.expenseTitlePlaceholder}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <div className="grid grid-cols-2 gap-3">
               <select
                 value={recGroup}
                 onChange={(e) => setRecGroup(e.target.value as ExpenseGroup)}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
               >
                 {EXPENSE_GROUPS.map((g) => (
                   <option key={g} value={g}>
@@ -644,7 +644,7 @@ export function ExpensesClient({
                 value={recAmount}
                 onChange={(e) => setRecAmount(e.target.value)}
                 placeholder={t.expenses.amount}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="number"
@@ -652,13 +652,13 @@ export function ExpensesClient({
                 value={recCycle}
                 onChange={(e) => setRecCycle(e.target.value)}
                 placeholder={t.expenses.cycleMonths}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="date"
                 value={recDueDate}
                 onChange={(e) => setRecDueDate(e.target.value)}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
             </div>
             <input
@@ -667,32 +667,32 @@ export function ExpensesClient({
               value={recRemindDays}
               onChange={(e) => setRecRemindDays(e.target.value)}
               placeholder={t.expenses.reminderDays}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-xs font-semibold cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-semibold cursor-pointer"
             >
               {t.common.add}
             </button>
           </form>
 
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3">
+          <div className="card-3d rounded-2xl p-5 space-y-3">
             {recurring.map((rec) => (
               <div
                 key={rec.id}
-                className="p-3 rounded-xl border border-[#E7DDD0] bg-[#FAF7F2] flex flex-wrap items-center justify-between gap-2 text-xs"
+                className="p-3 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] flex flex-wrap items-center justify-between gap-2 text-xs"
               >
                 <div>
-                  <p className="font-bold text-[#4A2C18]">{rec.title}</p>
-                  <p className="text-[#7B6554]">
+                  <p className="font-bold text-[#14532D]">{rec.title}</p>
+                  <p className="text-[#2F6844]">
                     {t.expenses.groups[rec.expense_group]} •{" "}
                     {t.dashboard.dueDate}: <strong>{rec.next_due_date}</strong> (
                     {rec.billing_cycle_months}m)
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[#4A2C18]">
+                  <span className="font-bold text-[#14532D]">
                     {formatMoney(rec.amount, currencyCode)}
                   </span>
                   <button

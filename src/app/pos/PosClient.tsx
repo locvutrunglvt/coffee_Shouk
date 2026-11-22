@@ -374,7 +374,7 @@ export function PosClient({
           </div>
           <Link
             href="/shifts"
-            className="px-3 py-1.5 rounded-lg bg-[#4A2C18] text-white font-semibold"
+            className="px-3 py-1.5 rounded-lg bg-[#16A34A] text-white font-semibold"
           >
             {t.pos.goOpenShift}
           </Link>
@@ -391,15 +391,15 @@ export function PosClient({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* LEFT: MENU GRID */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-3 space-y-3">
+          <div className="card-3d rounded-2xl p-3 space-y-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#16A34A] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t.pos.searchPlaceholder}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[#E7DDD0] bg-[#FAF7F2]"
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-[#F2FBF4]"
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -408,8 +408,8 @@ export function PosClient({
                 onClick={() => setSelectedCat("all")}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border cursor-pointer ${
                   selectedCat === "all"
-                    ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                    : "bg-[#FAF7F2] text-[#5C4938] border-[#E7DDD0]"
+                    ? "bg-[#16A34A] text-white border-[#16A34A]"
+                    : "bg-[#F2FBF4] text-[#1E4D31] border-[#CDE9D5]"
                 }`}
               >
                 {t.common.all}
@@ -421,8 +421,8 @@ export function PosClient({
                   onClick={() => setSelectedCat(c.id)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border cursor-pointer ${
                     selectedCat === c.id
-                      ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                      : "bg-[#FAF7F2] text-[#5C4938] border-[#E7DDD0]"
+                      ? "bg-[#16A34A] text-white border-[#16A34A]"
+                      : "bg-[#F2FBF4] text-[#1E4D31] border-[#CDE9D5]"
                   }`}
                 >
                   {c.name}
@@ -440,11 +440,11 @@ export function PosClient({
                 onClick={() => openCustomize(p)}
                 className={`text-left bg-white rounded-2xl border overflow-hidden flex flex-col transition-all ${
                   p.is_available
-                    ? "border-[#E7DDD0] hover:border-[#C97B36] hover:shadow-sm cursor-pointer active:scale-[0.99]"
+                    ? "border-[#CDE9D5] hover:border-[#22C55E] hover:shadow-sm cursor-pointer active:scale-[0.99]"
                     : "border-red-200 opacity-50 cursor-not-allowed"
                 }`}
               >
-                <div className="relative h-28 w-full bg-[#F3ECE2] flex items-center justify-center overflow-hidden">
+                <div className="relative h-28 w-full bg-[#EAFBF0] flex items-center justify-center overflow-hidden">
                   {p.image_url ? (
                     <Image
                       src={p.image_url}
@@ -453,7 +453,7 @@ export function PosClient({
                       className="object-cover"
                     />
                   ) : (
-                    <Coffee className="w-8 h-8 text-[#8C7563]/60" />
+                    <Coffee className="w-8 h-8 text-[#16A34A]/60" />
                   )}
                   {!p.is_available && (
                     <span className="absolute inset-0 bg-black/50 text-white text-xs font-bold flex items-center justify-center">
@@ -462,10 +462,10 @@ export function PosClient({
                   )}
                 </div>
                 <div className="p-2.5 flex-1 flex flex-col justify-between">
-                  <p className="font-semibold text-xs sm:text-sm text-[#4A2C18] line-clamp-2">
+                  <p className="font-semibold text-sm sm:text-base text-[#14532D] line-clamp-2">
                     {p.name}
                   </p>
-                  <p className="text-xs font-bold text-[#C97B36] mt-1">
+                  <p className="text-xs font-bold text-[#15803D] mt-1">
                     {formatMoney(p.base_price, settings.currency_code)}
                   </p>
                 </div>
@@ -476,10 +476,10 @@ export function PosClient({
 
         {/* RIGHT: CART & CHECKOUT */}
         <div className="lg:col-span-5 xl:col-span-4">
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4 space-y-4 lg:sticky lg:top-4">
-            <div className="flex items-center justify-between border-b border-[#F3ECE2] pb-3">
-              <div className="flex items-center gap-2 font-bold text-[#4A2C18]">
-                <ShoppingCart className="w-4 h-4 text-[#C97B36]" />
+          <div className="card-3d rounded-2xl p-4 space-y-4 lg:sticky lg:top-4">
+            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
+              <div className="flex items-center gap-2 font-bold text-[#14532D]">
+                <ShoppingCart className="w-4 h-4 text-[#15803D]" />
                 <span>
                   {t.pos.cartTitle} ({cart.reduce((s, i) => s + i.quantity, 0)})
                 </span>
@@ -496,7 +496,7 @@ export function PosClient({
             </div>
 
             {/* Order Type + Table */}
-            <div className="grid grid-cols-3 gap-1.5 bg-[#FAF7F2] p-1 rounded-xl text-xs font-semibold">
+            <div className="grid grid-cols-3 gap-1.5 bg-[#F2FBF4] p-1 rounded-xl text-xs font-semibold">
               {(
                 [
                   ["dine_in", t.pos.dineIn],
@@ -510,8 +510,8 @@ export function PosClient({
                   onClick={() => setOrderType(typeKey)}
                   className={`py-1.5 rounded-lg cursor-pointer ${
                     orderType === typeKey
-                      ? "bg-[#4A2C18] text-white"
-                      : "text-[#5C4938]"
+                      ? "bg-[#16A34A] text-white"
+                      : "text-[#1E4D31]"
                   }`}
                 >
                   {label}
@@ -523,7 +523,7 @@ export function PosClient({
               <select
                 value={tableId}
                 onChange={(e) => setTableId(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
               >
                 <option value="">{t.pos.selectTable}</option>
                 {tables.map((tb) => (
@@ -536,7 +536,7 @@ export function PosClient({
 
             {/* Cart Items */}
             {cart.length === 0 ? (
-              <p className="text-xs text-center text-[#7B6554] py-6">
+              <p className="text-xs text-center text-[#2F6844] py-6">
                 {t.pos.emptyCart}
               </p>
             ) : (
@@ -547,16 +547,16 @@ export function PosClient({
                   return (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0] space-y-1.5"
+                      className="p-2.5 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5] space-y-1.5"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#4A2C18]">
+                          <p className="text-xs font-bold text-[#14532D]">
                             {item.productName}
                             {item.variantName ? ` (${item.variantName})` : ""}
                           </p>
                           {item.toppings.length > 0 && (
-                            <p className="text-[11px] text-[#7B6554]">
+                            <p className="text-[11px] text-[#2F6844]">
                               + {item.toppings.map((tp) => tp.name).join(", ")}
                             </p>
                           )}
@@ -577,7 +577,7 @@ export function PosClient({
                         </button>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="inline-flex items-center gap-2 bg-white border border-[#E7DDD0] rounded-lg px-1.5 py-0.5">
+                        <div className="inline-flex items-center gap-2 bg-white border border-[#CDE9D5] rounded-lg px-1.5 py-0.5">
                           <button
                             type="button"
                             onClick={() => updateCartQty(idx, -1)}
@@ -596,7 +596,7 @@ export function PosClient({
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
-                        <span className="text-xs font-bold text-[#4A2C18]">
+                        <span className="text-xs font-bold text-[#14532D]">
                           {formatMoney(lineTotal, settings.currency_code)}
                         </span>
                       </div>
@@ -607,19 +607,19 @@ export function PosClient({
             )}
 
             {/* Totals & Payment */}
-            <div className="border-t border-[#F3ECE2] pt-3 space-y-2.5 text-xs">
+            <div className="border-t border-[#DDF3E4] pt-3 space-y-2.5 text-xs">
               <input
                 type="text"
                 value={orderNote}
                 onChange={(e) => setOrderNote(e.target.value)}
                 placeholder={t.pos.orderNotePlaceholder}
-                className="w-full px-3 py-1.5 rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-1.5 rounded-xl border border-[#CDE9D5]"
               />
 
               {canCollectCash && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] text-[#7B6554] mb-0.5">
+                    <label className="block text-[11px] text-[#2F6844] mb-0.5">
                       {t.pos.discount}
                     </label>
                     <input
@@ -627,11 +627,11 @@ export function PosClient({
                       min="0"
                       value={discount}
                       onChange={(e) => setDiscount(e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#E7DDD0]"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#CDE9D5]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-[#7B6554] mb-0.5">
+                    <label className="block text-[11px] text-[#2F6844] mb-0.5">
                       {t.common.note}
                     </label>
                     <input
@@ -639,17 +639,17 @@ export function PosClient({
                       value={discountReason}
                       onChange={(e) => setDiscountReason(e.target.value)}
                       placeholder={t.pos.discountReasonPlaceholder}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#E7DDD0]"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#CDE9D5]"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-between text-[#7B6554]">
+              <div className="flex justify-between text-[#2F6844]">
                 <span>{t.pos.subtotal}</span>
                 <span>{formatMoney(subtotal, settings.currency_code)}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-[#4A2C18]">
+              <div className="flex justify-between text-base font-bold text-[#14532D]">
                 <span>{t.pos.totalDue}</span>
                 <span>{formatMoney(totalDue, settings.currency_code)}</span>
               </div>
@@ -670,8 +670,8 @@ export function PosClient({
                         onClick={() => setPaymentMethod(m)}
                         className={`flex flex-col items-center py-2 px-1 rounded-xl border text-[11px] font-semibold cursor-pointer ${
                           paymentMethod === m
-                            ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                            : "bg-white text-[#5C4938] border-[#E7DDD0]"
+                            ? "bg-[#16A34A] text-white border-[#16A34A]"
+                            : "bg-white text-[#1E4D31] border-[#CDE9D5]"
                         }`}
                       >
                         <Icon className="w-4 h-4 mb-0.5" />
@@ -681,15 +681,15 @@ export function PosClient({
                   </div>
 
                   {paymentMethod === "cash" && (
-                    <div className="bg-[#FAF7F2] p-2.5 rounded-xl space-y-1.5">
+                    <div className="bg-[#F2FBF4] p-2.5 rounded-xl space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-[#7B6554]">
+                        <span className="text-[11px] text-[#2F6844]">
                           {t.pos.cashReceived}
                         </span>
                         <button
                           type="button"
                           onClick={() => setCashReceived(String(totalDue))}
-                          className="text-[11px] font-semibold text-[#C97B36] hover:underline cursor-pointer"
+                          className="text-[11px] font-semibold text-[#15803D] hover:underline cursor-pointer"
                         >
                           {t.pos.exactCash}
                         </button>
@@ -700,7 +700,7 @@ export function PosClient({
                         value={cashReceived}
                         onChange={(e) => setCashReceived(e.target.value)}
                         placeholder={String(totalDue)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-[#E7DDD0] bg-white text-sm font-semibold"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[#CDE9D5] bg-white text-sm font-semibold"
                       />
                       <div className="flex justify-between text-xs font-semibold text-emerald-700">
                         <span>{t.pos.cashChange}</span>
@@ -710,8 +710,8 @@ export function PosClient({
                   )}
 
                   {paymentMethod === "qr_transfer" && (
-                    <div className="bg-[#FAF7F2] p-3 rounded-xl text-center space-y-1.5 border border-[#E7DDD0]">
-                      <p className="text-[11px] text-[#7B6554]">
+                    <div className="bg-[#F2FBF4] p-3 rounded-xl text-center space-y-1.5 border border-[#CDE9D5]">
+                      <p className="text-[11px] text-[#2F6844]">
                         {t.pos.qrScanHint}
                       </p>
                       {settings.qr_image_url ? (
@@ -720,7 +720,7 @@ export function PosClient({
                           alt="Payment QR"
                           width={140}
                           height={140}
-                          className="w-36 h-36 mx-auto object-contain rounded-xl bg-white p-1 border border-[#E7DDD0]"
+                          className="w-36 h-36 mx-auto object-contain rounded-xl bg-white p-1 border border-[#CDE9D5]"
                         />
                       ) : (
                         <p className="text-[11px] text-amber-800">
@@ -728,7 +728,7 @@ export function PosClient({
                         </p>
                       )}
                       {settings.bank_info && (
-                        <p className="text-xs font-semibold text-[#4A2C18]">
+                        <p className="text-xs font-semibold text-[#14532D]">
                           {settings.bank_info}
                         </p>
                       )}
@@ -743,7 +743,7 @@ export function PosClient({
                     type="button"
                     disabled={cart.length === 0 || submitting}
                     onClick={() => submitOrder(true)}
-                    className="w-full py-3 rounded-xl bg-[#4A2C18] hover:bg-[#3A2212] text-white font-bold text-sm cursor-pointer disabled:opacity-50"
+                    className="w-full py-3 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white font-bold text-sm cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? t.common.saving : t.pos.checkoutBtn}
                   </button>
@@ -752,7 +752,7 @@ export function PosClient({
                   type="button"
                   disabled={cart.length === 0 || submitting}
                   onClick={() => submitOrder(false)}
-                  className="w-full py-2.5 rounded-xl border border-[#4A2C18] text-[#4A2C18] hover:bg-[#F3ECE2] font-semibold text-xs cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl border border-[#16A34A] text-[#14532D] hover:bg-[#EAFBF0] font-semibold text-xs cursor-pointer disabled:opacity-50"
                 >
                   {t.pos.sendOnlyBtn}
                 </button>
@@ -763,15 +763,15 @@ export function PosClient({
       </div>
 
       {/* RECENT ORDERS TODAY */}
-      <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4 space-y-3">
-        <h2 className="font-bold text-sm text-[#4A2C18]">{t.pos.recentOrders}</h2>
+      <div className="card-3d rounded-2xl p-4 space-y-3">
+        <h2 className="font-bold text-sm text-[#14532D]">{t.pos.recentOrders}</h2>
         {recentOrders.length === 0 ? (
-          <p className="text-xs text-[#7B6554]">{t.common.noData}</p>
+          <p className="text-xs text-[#2F6844]">{t.common.noData}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.pos.orderNo}</th>
                   <th className="py-2 pr-3">{t.pos.selectTable}</th>
                   <th className="py-2 pr-3">{t.common.total}</th>
@@ -779,10 +779,10 @@ export function PosClient({
                   <th className="py-2 pr-3">{t.common.actions}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {recentOrders.map((o) => (
                   <tr key={o.id}>
-                    <td className="py-2.5 pr-3 font-bold text-[#4A2C18]">
+                    <td className="py-2.5 pr-3 font-bold text-[#14532D]">
                       #{o.order_number}
                     </td>
                     <td className="py-2.5 pr-3">
@@ -819,7 +819,7 @@ export function PosClient({
                           <button
                             type="button"
                             onClick={() => handleCollectUnpaid(o)}
-                            className="px-2.5 py-1 rounded-lg bg-[#4A2C18] text-white font-semibold cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-[#16A34A] text-white font-semibold cursor-pointer"
                           >
                             {t.pos.collectPayment}
                           </button>
@@ -827,7 +827,7 @@ export function PosClient({
                       <button
                         type="button"
                         onClick={() => handlePrintOrder(o)}
-                        className="p-1.5 rounded-lg border border-[#E7DDD0] hover:bg-[#FAF7F2] cursor-pointer"
+                        className="p-1.5 rounded-lg border border-[#CDE9D5] hover:bg-[#F2FBF4] cursor-pointer"
                         title={t.common.print}
                       >
                         <Printer className="w-3.5 h-3.5" />
@@ -854,7 +854,7 @@ export function PosClient({
       {activeProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#F3ECE2] pb-3">
+            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
               <div className="flex items-center gap-3">
                 {activeProduct.image_url && (
                   <Image
@@ -862,14 +862,14 @@ export function PosClient({
                     alt={activeProduct.name}
                     width={48}
                     height={48}
-                    className="w-12 h-12 rounded-xl object-cover border border-[#E7DDD0]"
+                    className="w-12 h-12 rounded-xl object-cover border border-[#CDE9D5]"
                   />
                 )}
                 <div>
-                  <h3 className="font-bold text-base text-[#4A2C18]">
+                  <h3 className="font-bold text-base text-[#14532D]">
                     {activeProduct.name}
                   </h3>
-                  <p className="text-xs text-[#C97B36] font-semibold">
+                  <p className="text-xs text-[#15803D] font-semibold">
                     {formatMoney(activeProduct.base_price, settings.currency_code)}
                   </p>
                 </div>
@@ -877,7 +877,7 @@ export function PosClient({
               <button
                 type="button"
                 onClick={() => setActiveProduct(null)}
-                className="p-1.5 rounded-lg hover:bg-[#F3ECE2] cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -885,7 +885,7 @@ export function PosClient({
 
             {activeProdVars.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-xs font-bold text-[#4A3828]">
+                <p className="text-xs font-bold text-[#14532D]">
                   {t.pos.sizeLabel}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -896,8 +896,8 @@ export function PosClient({
                       onClick={() => setPickedVariantId(v.id)}
                       className={`px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer ${
                         pickedVariantId === v.id
-                          ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                          : "bg-white text-[#4A2C18] border-[#E7DDD0]"
+                          ? "bg-[#16A34A] text-white border-[#16A34A]"
+                          : "bg-white text-[#14532D] border-[#CDE9D5]"
                       }`}
                     >
                       {v.name} — {formatMoney(v.price, settings.currency_code)}
@@ -909,7 +909,7 @@ export function PosClient({
 
             {toppings.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-xs font-bold text-[#4A3828]">
+                <p className="text-xs font-bold text-[#14532D]">
                   {t.pos.toppingsLabel}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -935,12 +935,12 @@ export function PosClient({
                           }}
                           className={`p-2 rounded-xl border text-left text-xs cursor-pointer ${
                             checked
-                              ? "bg-[#F3ECE2] border-[#C97B36] font-semibold text-[#4A2C18]"
-                              : "bg-white border-[#E7DDD0] text-[#5C4938]"
+                              ? "bg-[#EAFBF0] border-[#22C55E] font-semibold text-[#14532D]"
+                              : "bg-white border-[#CDE9D5] text-[#1E4D31]"
                           }`}
                         >
                           <p>{tp.name}</p>
-                          <p className="text-[11px] text-[#C97B36]">
+                          <p className="text-[11px] text-[#15803D]">
                             +{formatMoney(tp.price, settings.currency_code)}
                           </p>
                         </button>
@@ -955,11 +955,11 @@ export function PosClient({
               value={pickedNote}
               onChange={(e) => setPickedNote(e.target.value)}
               placeholder={t.pos.itemNotePlaceholder}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
-              <div className="inline-flex items-center gap-3 border border-[#E7DDD0] rounded-xl px-3 py-1.5">
+              <div className="inline-flex items-center gap-3 border border-[#CDE9D5] rounded-xl px-3 py-1.5">
                 <button
                   type="button"
                   onClick={() => setPickedQty((q) => Math.max(1, q - 1))}
@@ -981,7 +981,7 @@ export function PosClient({
               <button
                 type="button"
                 onClick={addCustomizedToCart}
-                className="flex-1 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-bold cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-bold cursor-pointer"
               >
                 {t.pos.addToCartBtn}
               </button>

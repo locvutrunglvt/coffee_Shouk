@@ -185,14 +185,14 @@ export function ShiftsClient({
       {!openShift ? (
         <form
           onSubmit={handleOpenShift}
-          className="bg-white rounded-2xl border border-[#E7DDD0] p-5 max-w-md space-y-4"
+          className="card-3d rounded-2xl p-5 max-w-md space-y-4"
         >
-          <div className="flex items-center gap-2 font-bold text-[#4A2C18]">
-            <Wallet className="w-5 h-5 text-[#C97B36]" />
+          <div className="flex items-center gap-2 font-bold text-[#14532D]">
+            <Wallet className="w-5 h-5 text-[#15803D]" />
             <h2>{t.shifts.noOpenShift}</h2>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-base font-extrabold text-[#14532D] mb-1">
               {t.shifts.openingCash} ({currencyCode})
             </label>
             <input
@@ -201,13 +201,13 @@ export function ShiftsClient({
               required
               value={openingCash}
               onChange={(e) => setOpeningCash(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2.5 text-sm rounded-xl border border-[#CDE9D5]"
             />
           </div>
           <button
             type="submit"
             disabled={busy}
-            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
           >
             <Play className="w-4 h-4" />
             <span>{t.shifts.openShiftBtn}</span>
@@ -216,52 +216,52 @@ export function ShiftsClient({
       ) : (
         <div className="space-y-5">
           {/* Active Shift Summary */}
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+          <div className="card-3d rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
                   {t.shifts.statusOpen}
                 </span>
-                <span className="text-xs text-[#7B6554]">
+                <span className="text-xs text-[#2F6844]">
                   {t.shifts.openedAt}: {formatDateTimeVN(openShift.opened_at)}
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0]">
-                <p className="text-[11px] text-[#7B6554]">{t.shifts.openingCash}</p>
-                <p className="text-sm font-bold text-[#4A2C18] mt-1">
+              <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5]">
+                <p className="text-[11px] text-[#2F6844]">{t.shifts.openingCash}</p>
+                <p className="text-base font-extrabold text-[#14532D] mt-1">
                   {formatMoney(openShift.opening_cash, currencyCode)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0]">
-                <p className="text-[11px] text-[#7B6554]">{t.shifts.cashSales}</p>
+              <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5]">
+                <p className="text-[11px] text-[#2F6844]">{t.shifts.cashSales}</p>
                 <p className="text-sm font-bold text-emerald-700 mt-1">
                   +{formatMoney(openShift.total_cash_sales, currencyCode)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0]">
-                <p className="text-[11px] text-[#7B6554]">{t.shifts.pettyExpenses}</p>
+              <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5]">
+                <p className="text-[11px] text-[#2F6844]">{t.shifts.pettyExpenses}</p>
                 <p className="text-sm font-bold text-red-700 mt-1">
                   -{formatMoney(openShift.total_petty_expenses, currencyCode)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#4A2C18] text-white">
+              <div className="p-3 rounded-xl bg-[#16A34A] text-white">
                 <p className="text-[11px] text-white/80">{t.shifts.expectedCash}</p>
                 <p className="text-sm font-bold mt-1">
                   {formatMoney(openShift.expected_cash, currencyCode)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0]">
-                <p className="text-[11px] text-[#7B6554]">{t.shifts.qrSales}</p>
+              <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5]">
+                <p className="text-[11px] text-[#2F6844]">{t.shifts.qrSales}</p>
                 <p className="text-sm font-bold text-sky-700 mt-1">
                   {formatMoney(openShift.total_qr_sales, currencyCode)}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0]">
-                <p className="text-[11px] text-[#7B6554]">{t.shifts.otherSales}</p>
-                <p className="text-sm font-bold text-[#4A2C18] mt-1">
+              <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5]">
+                <p className="text-[11px] text-[#2F6844]">{t.shifts.otherSales}</p>
+                <p className="text-base font-extrabold text-[#14532D] mt-1">
                   {formatMoney(openShift.total_other_sales, currencyCode)}
                 </p>
               </div>
@@ -270,10 +270,10 @@ export function ShiftsClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Petty Cash Form */}
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+            <div className="card-3d rounded-2xl p-5 space-y-4">
               <form onSubmit={handleAddPetty} className="space-y-3">
-                <h3 className="font-bold text-sm text-[#4A2C18] flex items-center gap-2">
-                  <PlusCircle className="w-4 h-4 text-[#C97B36]" />
+                <h3 className="font-bold text-sm text-[#14532D] flex items-center gap-2">
+                  <PlusCircle className="w-4 h-4 text-[#15803D]" />
                   <span>{t.shifts.addPettyTitle}</span>
                 </h3>
                 <input
@@ -282,7 +282,7 @@ export function ShiftsClient({
                   value={pettyTitle}
                   onChange={(e) => setPettyTitle(e.target.value)}
                   placeholder={t.shifts.pettyTitlePlaceholder}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
                 <input
                   type="number"
@@ -291,25 +291,25 @@ export function ShiftsClient({
                   value={pettyAmount}
                   onChange={(e) => setPettyAmount(e.target.value)}
                   placeholder={`${t.shifts.pettyAmount} (${currencyCode})`}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
                 <button
                   type="submit"
                   disabled={busy}
-                  className="px-4 py-2 rounded-xl bg-[#C97B36] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
+                  className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
                 >
                   {t.shifts.addPettyBtn}
                 </button>
               </form>
 
-              <div className="border-t border-[#F3ECE2] pt-3 space-y-2">
-                <p className="text-xs font-semibold text-[#7B6554]">
+              <div className="border-t border-[#DDF3E4] pt-3 space-y-2">
+                <p className="text-xs font-semibold text-[#2F6844]">
                   {t.shifts.pettyListTitle}
                 </p>
                 {pettyList.length === 0 ? (
-                  <p className="text-xs text-[#7B6554]">{t.common.noData}</p>
+                  <p className="text-xs text-[#2F6844]">{t.common.noData}</p>
                 ) : (
-                  <ul className="divide-y divide-[#F3ECE2] text-xs">
+                  <ul className="divide-y divide-[#DDF3E4] text-xs">
                     {pettyList.map((item) => (
                       <li key={item.id} className="py-2 flex justify-between">
                         <span>{item.title}</span>
@@ -326,14 +326,14 @@ export function ShiftsClient({
             {/* Close Shift Form */}
             <form
               onSubmit={handleCloseShift}
-              className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+              className="card-3d rounded-2xl p-5 space-y-3 h-fit"
             >
-              <h3 className="font-bold text-sm text-[#4A2C18] flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#4A2C18]" />
+              <h3 className="font-bold text-sm text-[#14532D] flex items-center gap-2">
+                <Lock className="w-4 h-4 text-[#14532D]" />
                 <span>{t.shifts.closeShiftTitle}</span>
               </h3>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.shifts.actualCashCounted} ({currencyCode})
                 </label>
                 <input
@@ -342,7 +342,7 @@ export function ShiftsClient({
                   min="0"
                   value={actualCash}
                   onChange={(e) => setActualCash(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0] font-semibold"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] font-semibold"
                 />
               </div>
 
@@ -372,20 +372,20 @@ export function ShiftsClient({
               )}
 
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.shifts.closeNotes}
                 </label>
                 <textarea
                   rows={2}
                   value={closeNotes}
                   onChange={(e) => setCloseNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-bold cursor-pointer disabled:opacity-60"
+                className="w-full py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-bold cursor-pointer disabled:opacity-60"
               >
                 {t.shifts.closeShiftBtn}
               </button>
@@ -395,15 +395,15 @@ export function ShiftsClient({
       )}
 
       {/* Closed Shifts History */}
-      <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3">
-        <h2 className="font-bold text-sm text-[#4A2C18]">{t.shifts.historyTitle}</h2>
+      <div className="card-3d rounded-2xl p-5 space-y-3">
+        <h2 className="font-bold text-sm text-[#14532D]">{t.shifts.historyTitle}</h2>
         {closedShifts.length === 0 ? (
-          <p className="text-xs text-[#7B6554]">{t.common.noData}</p>
+          <p className="text-xs text-[#2F6844]">{t.common.noData}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.shifts.openedAt}</th>
                   <th className="py-2 pr-3">{t.shifts.cashSales}</th>
                   <th className="py-2 pr-3">{t.shifts.qrSales}</th>
@@ -412,7 +412,7 @@ export function ShiftsClient({
                   <th className="py-2 pr-3">{t.shifts.cashDifference}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {closedShifts.map((s) => (
                   <tr key={s.id}>
                     <td className="py-2.5 pr-3">{formatDateTimeVN(s.opened_at)}</td>

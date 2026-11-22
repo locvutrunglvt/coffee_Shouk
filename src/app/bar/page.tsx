@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/AppShell";
+import { ModuleGuide } from "@/components/ModuleGuide";
 import { requireRouteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getServerI18n } from "@/lib/i18n/server";
@@ -25,9 +26,14 @@ export default async function BarPage() {
     <AppShell profile={profile} settings={settings}>
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#4A2C18]">{t.bar.title}</h1>
-          <p className="text-xs text-[#7B6554]">{t.bar.subtitle}</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#14532D]">
+            {t.bar.title}
+          </h1>
+          <p className="text-sm sm:text-base font-medium text-[#2F6844]">
+            {t.bar.subtitle}
+          </p>
         </div>
+        <ModuleGuide guideKey="bar" />
         <BarClient initialOrders={(data as unknown as BarOrder[]) ?? []} />
       </div>
     </AppShell>

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4A2C18",
+  themeColor: "#16A34A",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   return (
     <html lang={locale} className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#FAF7F2] text-[#231810]">
+      <body className="min-h-full flex flex-col text-[#143321]">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
     </html>

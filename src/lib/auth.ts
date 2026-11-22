@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
@@ -23,7 +24,7 @@ export interface ShopSettings {
   bank_info: string;
 }
 
-export async function getAuthContext() {
+export const getAuthContext = cache(async () => {
   const { isConfigured } = getSupabaseEnv();
   if (!isConfigured) {
     return { isConfigured: false as const, profile: null, settings: null };
@@ -34,11 +35,11 @@ export async function getAuthContext() {
     return { isConfigured: false as const, profile: null, settings: null };
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub as string | undefined;
+  const claimsEmail = (claimsData?.claims?.email as string | undefined) ?? "";
 
-  if (!user) {
+  if (!userId) {
     return { isConfigured: true as const, profile: null, settings: null };
   }
 
@@ -46,11 +47,13 @@ export async function getAuthContext() {
     supabase
       .from("profiles")
       .select("id, full_name, email, phone, role, is_active")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single(),
     supabase
       .from("shop_settings")
-      .select("id, shop_name, address, phone, currency_code, currency_symbol, qr_image_url, bank_info")
+      .select(
+        "id, shop_name, address, phone, currency_code, currency_symbol, qr_image_url, bank_info"
+      )
       .eq("id", 1)
       .single(),
   ]);
@@ -58,9 +61,9 @@ export async function getAuthContext() {
   return {
     isConfigured: true as const,
     profile: (profile as UserProfile | null) ?? {
-      id: user.id,
-      full_name: user.email?.split("@")[0] ?? "Staff",
-      email: user.email ?? "",
+      id: userId,
+      full_name: claimsEmail.split("@")[0] || "Staff",
+      email: claimsEmail,
       phone: "",
       role: "staff" as UserRole,
       is_active: true,
@@ -76,7 +79,7 @@ export async function getAuthContext() {
       bank_info: "",
     },
   };
-}
+});
 
 export async function requireRouteAccess(pathname: string) {
   const ctx = await getAuthContext();

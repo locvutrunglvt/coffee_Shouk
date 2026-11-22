@@ -28,8 +28,8 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{t.auth.setupTitle}</span>
         </div>
-        <p className="text-xs leading-relaxed text-amber-900">{t.auth.setupDesc}</p>
-        <pre className="bg-[#231810] text-[#FAF7F2] p-3 rounded-xl text-[11px] overflow-x-auto">
+        <p className="text-sm leading-relaxed text-amber-900">{t.auth.setupDesc}</p>
+        <pre className="bg-[#143321] text-[#F2FBF4] p-3 rounded-xl text-xs overflow-x-auto">
 {`NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
@@ -105,17 +105,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 bg-[#F3ECE2] p-1 rounded-xl text-sm font-medium">
+      <div className="grid grid-cols-2 bg-[#EAFBF0] border border-[#CDE9D5] p-1 rounded-2xl text-sm font-bold">
         <button
           type="button"
           onClick={() => {
             setMode("login");
             setError("");
           }}
-          className={`py-2 rounded-lg transition-colors cursor-pointer ${
+          className={`py-2.5 rounded-xl transition-all cursor-pointer ${
             mode === "login"
-              ? "bg-white text-[#4A2C18] shadow-sm font-semibold"
-              : "text-[#7B6554]"
+              ? "bg-white text-[#14532D] shadow-sm"
+              : "text-[#3B6B4C]"
           }`}
         >
           {t.auth.loginTab}
@@ -126,10 +126,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
             setMode("signup");
             setError("");
           }}
-          className={`py-2 rounded-lg transition-colors cursor-pointer ${
+          className={`py-2.5 rounded-xl transition-all cursor-pointer ${
             mode === "signup"
-              ? "bg-white text-[#4A2C18] shadow-sm font-semibold"
-              : "text-[#7B6554]"
+              ? "bg-white text-[#14532D] shadow-sm"
+              : "text-[#3B6B4C]"
           }`}
         >
           {t.auth.signupTab}
@@ -137,14 +137,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs">
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       {message && (
-        <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
           <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{message}</span>
         </div>
@@ -153,46 +153,46 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
       <form onSubmit={handleSubmit} className="space-y-3.5">
         {mode === "signup" && (
           <div>
-            <label className="block text-xs font-medium text-[#4A3828] mb-1">
+            <label className="block text-sm font-semibold text-[#14532D] mb-1">
               {t.auth.fullName}
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
+              <User className="w-4 h-4 text-[#16A34A] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t.auth.fullNamePlaceholder}
-                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
+                className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
               />
             </div>
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-medium text-[#4A3828] mb-1">
+          <label className="block text-sm font-semibold text-[#14532D] mb-1">
             {t.auth.email}
           </label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Mail className="w-4 h-4 text-[#16A34A] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.auth.emailPlaceholder}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
+              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#4A3828] mb-1">
+          <label className="block text-sm font-semibold text-[#14532D] mb-1">
             {t.auth.password}
           </label>
           <div className="relative">
-            <Lock className="w-4 h-4 text-[#8C7563] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Lock className="w-4 h-4 text-[#16A34A] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="password"
               required
@@ -200,7 +200,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.auth.passwordPlaceholder}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E7DDD0] bg-white focus:outline-none focus:ring-2 focus:ring-[#C97B36]"
+              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
             />
           </div>
         </div>
@@ -208,7 +208,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 px-4 rounded-xl bg-[#4A2C18] hover:bg-[#3A2212] text-white font-semibold text-sm transition-colors cursor-pointer disabled:opacity-60"
+          className="w-full py-3 px-4 rounded-2xl btn-3d-green font-extrabold text-base cursor-pointer disabled:opacity-60"
         >
           {loading
             ? t.auth.processing
@@ -219,7 +219,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
       </form>
 
       {mode === "signup" && (
-        <p className="text-[11px] text-[#7B6554] text-center leading-relaxed">
+        <p className="text-xs text-[#2F6844] text-center leading-relaxed">
           {t.auth.firstAccountHint}
         </p>
       )}

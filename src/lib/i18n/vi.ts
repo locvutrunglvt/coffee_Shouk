@@ -412,6 +412,102 @@ export const vi = {
     roleUpdated: "Đã cập nhật phân quyền nhân viên.",
     roleError: "Lỗi khi cập nhật quyền nhân viên.",
   },
+  guides: {
+    toggleOpen: "Xem hướng dẫn chi tiết",
+    toggleClose: "Thu gọn hướng dẫn",
+    tipLabel: "Mẹo hay",
+    dashboard: {
+      title: "Hướng dẫn màn hình Tổng quan",
+      steps: [
+        "Xem nhanh 4 ô số liệu trên cùng: Doanh thu hôm nay, Trạng thái ca đang mở, Nguyên liệu sắp hết và Chi phí định kỳ sắp tới hạn.",
+        "Bấm vào các ô hình khối màu xanh nổi bật bên dưới để nhảy nhanh tới Bán hàng, Kết ca, Kho hay Điện/Nước.",
+        "Kiểm tra bảng Cảnh báo tồn kho thấp mỗi sáng để kịp nhập thêm cà phê, sữa, ly trước giờ đông khách.",
+      ],
+      tip: "Bạn có thể đổi ngôn ngữ Việt / Anh / Lào bất cứ lúc nào ở nút chuyển ngay trên thanh menu.",
+    },
+    pos: {
+      title: "Hướng dẫn Bán hàng (POS) cho Thu ngân & Phục vụ",
+      steps: [
+        "Chọn hình thức: Tại quán (kèm chọn bàn), Mang đi hoặc Giao hàng.",
+        "Chạm vào hình món nước để chọn Size (S/M/L), Topping và ghi chú (ít đá, 50% đường...) rồi bấm Thêm vào đơn.",
+        "Nếu là Thu ngân: chọn Tiền mặt (nhập tiền khách đưa để tự tính tiền thừa) hoặc Chuyển khoản QR → bấm 'Thanh toán & Gửi Bar'. Hệ thống tự cộng tiền vào ca và tự trừ kho nguyên liệu theo công thức.",
+        "Nếu là Phục vụ đi bàn: bấm 'Gửi order (Chưa thu tiền)' để quầy Bar pha trước, khi khách về quầy thì Thu ngân bấm 'Thu tiền' ở bảng Đơn gần đây.",
+      ],
+      tip: "Nhớ mở ca ở mục Ca & Cân đối tiền trước khi thu ngân bắt đầu bán để cuối ngày đối soát két chính xác.",
+    },
+    bar: {
+      title: "Hướng dẫn Màn hình Pha chế (Bar / KDS)",
+      steps: [
+        "Đơn hàng mới từ Thu ngân hoặc Phục vụ sẽ tự động nhảy vào tab 'Chờ pha' theo thời gian thực (không cần tải lại trang).",
+        "Chú ý các dòng ghi chú màu vàng (ít đá, không đường...) và Topping dưới mỗi ly.",
+        "Quy trình 3 chạm: Bấm 'Bắt đầu làm' → pha xong bấm 'Xong món' → khi phục vụ bưng ra bàn bấm 'Đã giao khách'.",
+      ],
+      tip: "Nếu nguyên liệu hoặc món nào đột xuất hết giữa buổi, Barista có thể vào mục Thực đơn để gạt nút 'Tạm hết'.",
+    },
+    shifts: {
+      title: "Hướng dẫn Mở ca, Chi lặt vặt & Kết ca cân đối tiền",
+      steps: [
+        "Đầu ca: nhập số tiền lẻ có sẵn trong két và bấm 'Mở ca làm việc mới'.",
+        "Trong ca: nếu có lấy tiền két đi mua đá, mua sữa gấp..., ghi ngay vào mục 'Chi lặt vặt trong ca' để hệ thống tự trừ khỏi tiền lý thuyết.",
+        "Cuối ca: đếm toàn bộ tiền mặt thực tế trong két, nhập vào ô 'Tiền mặt thực tế đếm được'. Hệ thống báo ngay Khớp két, Thừa hay Thiếu tiền trước khi bấm 'Chốt & Đóng ca'.",
+      ],
+      tip: "Tiền chuyển khoản QR được tách riêng ở ô Doanh thu QR để không bị nhầm lẫn khi đếm tiền mặt trong két.",
+    },
+    menu: {
+      title: "Hướng dẫn Quản lý Thực đơn & Hình ảnh minh họa",
+      steps: [
+        "Bước 1: Tạo Danh mục trước ở tab 'Danh mục' (VD: Cà phê, Trà sữa, Trà trái cây, Bánh ngọt).",
+        "Bước 2: Quay lại tab 'Món & Size' bấm 'Thêm món mới'. Bấm 'Tải ảnh minh họa' để chụp/chọn ảnh đẹp từ điện thoại hoặc máy tính (ảnh tự nén nhẹ).",
+        "Bước 3: Thêm các Size (S, M, L) kèm giá riêng ngay trong khung tạo món. Thiết lập thêm Topping và Sơ đồ bàn ở 2 tab còn lại.",
+      ],
+      tip: "Mỗi món có ảnh đẹp rõ ràng giúp nhân viên mới bấm chọn siêu nhanh trên màn hình POS.",
+    },
+    inventory: {
+      title: "Hướng dẫn Nhập kho, Tồn kho & Công thức định lượng",
+      steps: [
+        "Tab Tồn kho: tạo từng nguyên liệu (VD: Cà phê hạt, Đơn vị nhập = Bịch 1kg, Đơn vị định lượng = g, Quy đổi = 1000).",
+        "Tab Nhập kho: khi mua hàng về, lập phiếu nhập theo đơn vị mua (Bịch/Hộp/Thùng) kèm giá nhập. Hệ thống tự quy đổi ra gam/ml và tính lại Giá vốn bình quân.",
+        "Tab Định lượng món: chọn từng món + Size để gắn lượng nguyên liệu tiêu hao (VD: 20g cà phê, 40ml sữa đặc, 1 ly). Khi bán trên POS, kho tự động trừ chính xác.",
+      ],
+      tip: "Xem giá vốn ước tính và biên lãi gộp ngay dưới bảng định lượng để định giá bán có lời.",
+    },
+    stockTake: {
+      title: "Hướng dẫn Kiểm kê & Cân đối kho cuối ngày/tuần",
+      steps: [
+        "Bấm 'Tạo phiếu kiểm kê mới' — hệ thống tự chụp số tồn lý thuyết hiện tại trên máy của toàn bộ nguyên liệu.",
+        "Cân/đếm lượng hàng thực tế đang còn trong quầy và kho, nhập vào cột 'Thực tế cân/đếm' kèm lý do nếu lệch (pha hỏng, đổ vỡ...).",
+        "Kiểm tra cột Chênh lệch & Giá trị hao hụt, sau đó bấm 'Chốt cân đối kho' để đưa tồn kho về đúng thực tế.",
+      ],
+      tip: "Số liệu hao hụt khi chốt cân đối sẽ tự động đưa vào Báo cáo Lãi/Lỗ (P&L) của tháng đó.",
+    },
+    expenses: {
+      title: "Hướng dẫn Chi phí Điện, Nước, Thuê mặt bằng & Lịch nhắc",
+      steps: [
+        "Ghi nhận Điện/Nước: chọn nhóm Tiền điện hoặc Tiền nước → nhập Chỉ số cũ, Chỉ số mới và Đơn giá → bấm 'Tự tính tiền từ chỉ số'.",
+        "Ghi nhận Thuê mặt bằng (trả nhiều tháng): nhập tổng tiền đã đóng và điền số tháng vào ô 'Phân bổ cho mấy tháng?' (VD: trả 3 tháng → hệ thống tự chia 1/3 vào chi phí mỗi tháng).",
+        "Tab Lịch nhắc định kỳ: cài đặt ngày đóng tiền nhà, Wifi hàng tháng; khi tới kỳ chỉ cần bấm 1 nút 'Ghi nhận đã đóng kỳ này'.",
+      ],
+      tip: "Bạn có thể chụp ảnh hóa đơn điện, nước, phiếu thu tiền nhà đính kèm trực tiếp từ điện thoại.",
+    },
+    reports: {
+      title: "Hướng dẫn Xem Báo cáo Lãi/Lỗ (P&L) & Xuất Excel",
+      steps: [
+        "Chọn tháng cần xem ở góc trên bên trái để hệ thống tổng hợp tự động Doanh thu thuần, Giá vốn bán hàng, Hao hụt kho và Chi phí vận hành phân bổ.",
+        "Theo dõi ô 'Lợi nhuận ròng' (màu xanh là có lãi) và 'Mức doanh thu hòa vốn / ngày' để đặt mục tiêu bán hàng.",
+        "Bấm 'Xuất Excel có công thức (.xlsx)' để tải file đối soát gồm 4 sheet (P&L, Orders, Expenses, StockMovements) liên kết bằng công thức SUM/SUMIF chuẩn.",
+      ],
+      tip: "File Excel xuất ra tự động đổi tiêu đề theo ngôn ngữ (Việt / Anh / Lào) bạn đang chọn.",
+    },
+    settings: {
+      title: "Hướng dẫn Cài đặt quán & Phân quyền nhân viên",
+      steps: [
+        "Cập nhật tên quán, địa chỉ, số điện thoại và chọn Đơn vị tiền tệ (Kip Lào LAK ₭, Việt Nam Đồng VND ₫, THB hoặc USD).",
+        "Tải ảnh QR ngân hàng (LaoQR / BCEL One / VietQR) và nhập số tài khoản để hiện ngay trên màn hình thu ngân POS.",
+        "Khi nhân viên mới tự tạo tài khoản ở màn hình đăng nhập, Chủ quán vào bảng bên dưới đổi vai trò từ 'Phục vụ' sang Thu ngân / Pha chế / Quản lý ca hoặc khóa tài khoản nếu nghỉ việc.",
+      ],
+      tip: "Tài khoản đăng ký đầu tiên luôn giữ quyền Chủ quán (Admin) và không thể tự khóa chính mình.",
+    },
+  },
 };
 
 export type Dictionary = typeof vi;

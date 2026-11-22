@@ -378,7 +378,7 @@ export function MenuClient({
     <div className="space-y-5">
       {/* Tabs + Action */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex flex-wrap gap-1 bg-white p-1 rounded-xl border border-[#E7DDD0]">
+        <div className="inline-flex flex-wrap gap-1 bg-white p-1 rounded-xl border border-[#CDE9D5]">
           {(
             [
               ["products", t.menu.productsTab],
@@ -391,10 +391,10 @@ export function MenuClient({
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-sm sm:text-base font-medium cursor-pointer transition-colors ${
                 activeTab === key
-                  ? "bg-[#4A2C18] text-white"
-                  : "text-[#5C4938] hover:bg-[#F3ECE2]"
+                  ? "bg-[#16A34A] text-white"
+                  : "text-[#1E4D31] hover:bg-[#EAFBF0]"
               }`}
             >
               {label}
@@ -406,7 +406,7 @@ export function MenuClient({
           <button
             type="button"
             onClick={openNewProductModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold hover:bg-[#3A2212] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold hover:bg-[#15803D] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>{t.menu.addProduct}</span>
@@ -423,8 +423,8 @@ export function MenuClient({
               onClick={() => setSelectedCat("all")}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border cursor-pointer ${
                 selectedCat === "all"
-                  ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                  : "bg-white text-[#5C4938] border-[#E7DDD0]"
+                  ? "bg-[#16A34A] text-white border-[#16A34A]"
+                  : "bg-white text-[#1E4D31] border-[#CDE9D5]"
               }`}
             >
               {t.common.all} ({products.length})
@@ -436,8 +436,8 @@ export function MenuClient({
                 onClick={() => setSelectedCat(cat.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border cursor-pointer ${
                   selectedCat === cat.id
-                    ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                    : "bg-white text-[#5C4938] border-[#E7DDD0]"
+                    ? "bg-[#16A34A] text-white border-[#16A34A]"
+                    : "bg-white text-[#1E4D31] border-[#CDE9D5]"
                 }`}
               >
                 {cat.name}
@@ -446,7 +446,7 @@ export function MenuClient({
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-8 text-center text-sm text-[#7B6554]">
+            <div className="card-3d rounded-2xl p-8 text-center text-sm text-[#2F6844]">
               {t.common.noData}
             </div>
           ) : (
@@ -460,7 +460,7 @@ export function MenuClient({
                     key={p.id}
                     className={`bg-white rounded-2xl border overflow-hidden flex flex-col transition-shadow hover:shadow-md ${
                       p.is_available
-                        ? "border-[#E7DDD0]"
+                        ? "border-[#CDE9D5]"
                         : "border-red-200 opacity-75"
                     }`}
                   >
@@ -473,9 +473,9 @@ export function MenuClient({
                           className="object-cover"
                         />
                       ) : (
-                        <Coffee className="w-12 h-12 text-[#8C7563]/60" />
+                        <Coffee className="w-12 h-12 text-[#16A34A]/60" />
                       )}
-                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-[#4A2C18] shadow-xs">
+                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-[#14532D] shadow-xs">
                         {p.category_id
                           ? catMap.get(p.category_id) ?? t.menu.noCategory
                           : t.menu.noCategory}
@@ -495,11 +495,11 @@ export function MenuClient({
 
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div>
-                        <h3 className="font-bold text-base text-[#4A2C18] line-clamp-1">
+                        <h3 className="font-bold text-base text-[#14532D] line-clamp-1">
                           {p.name}
                         </h3>
                         {p.description && (
-                          <p className="text-xs text-[#7B6554] mt-0.5 line-clamp-2">
+                          <p className="text-xs text-[#2F6844] mt-0.5 line-clamp-2">
                             {p.description}
                           </p>
                         )}
@@ -511,7 +511,7 @@ export function MenuClient({
                             {pVariants.map((v) => (
                               <span
                                 key={v.id}
-                                className="px-2 py-0.5 rounded-lg bg-[#FAF7F2] border border-[#E7DDD0] text-xs font-medium text-[#4A2C18]"
+                                className="px-2 py-0.5 rounded-lg bg-[#F2FBF4] border border-[#CDE9D5] text-base font-extrabold text-[#14532D]"
                               >
                                 {v.name}:{" "}
                                 <strong>{formatMoney(v.price, currencyCode)}</strong>
@@ -519,17 +519,17 @@ export function MenuClient({
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm font-bold text-[#C97B36]">
+                          <p className="text-sm font-bold text-[#15803D]">
                             {formatMoney(p.base_price, currencyCode)}
                           </p>
                         )}
 
                         {canEdit && (
-                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F3ECE2]">
+                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DDF3E4]">
                             <button
                               type="button"
                               onClick={() => openEditProductModal(p)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#FAF7F2] hover:bg-[#F3ECE2] text-[#4A2C18] cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#F2FBF4] hover:bg-[#EAFBF0] text-[#14532D] cursor-pointer"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                               <span>{t.common.edit}</span>
@@ -559,9 +559,9 @@ export function MenuClient({
           {canEdit && (
             <form
               onSubmit={handleAddCategory}
-              className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+              className="card-3d rounded-2xl p-5 space-y-3 h-fit"
             >
-              <h2 className="font-bold text-sm text-[#4A2C18]">
+              <h2 className="font-bold text-sm text-[#14532D]">
                 {t.menu.addCategory}
               </h2>
               <input
@@ -570,32 +570,32 @@ export function MenuClient({
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
                 placeholder={t.menu.categoryName}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="number"
                 value={newCatOrder}
                 onChange={(e) => setNewCatOrder(e.target.value)}
                 placeholder={t.menu.sortOrder}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer"
               >
                 {t.common.add}
               </button>
             </form>
           )}
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-2">
+          <div className="card-3d rounded-2xl p-5 space-y-2">
             {categories.map((c) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between py-2 border-b border-[#F3ECE2] last:border-0 text-sm"
+                className="flex items-center justify-between py-2 border-b border-[#DDF3E4] last:border-0 text-sm"
               >
                 <div>
-                  <span className="font-semibold text-[#4A2C18]">{c.name}</span>
-                  <span className="ml-2 text-xs text-[#7B6554]">#{c.sort_order}</span>
+                  <span className="font-semibold text-[#14532D]">{c.name}</span>
+                  <span className="ml-2 text-xs text-[#2F6844]">#{c.sort_order}</span>
                 </div>
                 {canEdit && (
                   <button
@@ -618,9 +618,9 @@ export function MenuClient({
           {canEdit && (
             <form
               onSubmit={handleAddTopping}
-              className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+              className="card-3d rounded-2xl p-5 space-y-3 h-fit"
             >
-              <h2 className="font-bold text-sm text-[#4A2C18]">
+              <h2 className="font-bold text-sm text-[#14532D]">
                 {t.menu.addTopping}
               </h2>
               <input
@@ -629,7 +629,7 @@ export function MenuClient({
                 value={newTopName}
                 onChange={(e) => setNewTopName(e.target.value)}
                 placeholder={t.menu.toppingName}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="number"
@@ -638,25 +638,25 @@ export function MenuClient({
                 value={newTopPrice}
                 onChange={(e) => setNewTopPrice(e.target.value)}
                 placeholder={t.menu.toppingPrice}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer"
               >
                 {t.common.add}
               </button>
             </form>
           )}
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-2">
+          <div className="card-3d rounded-2xl p-5 space-y-2">
             {toppings.map((top) => (
               <div
                 key={top.id}
-                className="flex items-center justify-between py-2 border-b border-[#F3ECE2] last:border-0 text-sm"
+                className="flex items-center justify-between py-2 border-b border-[#DDF3E4] last:border-0 text-sm"
               >
                 <div>
-                  <span className="font-semibold text-[#4A2C18]">{top.name}</span>
-                  <span className="ml-2 text-xs text-[#C97B36] font-semibold">
+                  <span className="font-semibold text-[#14532D]">{top.name}</span>
+                  <span className="ml-2 text-xs text-[#15803D] font-semibold">
                     +{formatMoney(top.price, currencyCode)}
                   </span>
                 </div>
@@ -694,9 +694,9 @@ export function MenuClient({
           {canEdit && (
             <form
               onSubmit={handleAddTable}
-              className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+              className="card-3d rounded-2xl p-5 space-y-3 h-fit"
             >
-              <h2 className="font-bold text-sm text-[#4A2C18]">
+              <h2 className="font-bold text-sm text-[#14532D]">
                 {t.menu.addTable}
               </h2>
               <input
@@ -705,32 +705,32 @@ export function MenuClient({
                 value={newTableName}
                 onChange={(e) => setNewTableName(e.target.value)}
                 placeholder={t.menu.tableName}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="text"
                 value={newTableZone}
                 onChange={(e) => setNewTableZone(e.target.value)}
                 placeholder={t.menu.tableZone}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer"
               >
                 {t.common.add}
               </button>
             </form>
           )}
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 grid grid-cols-2 sm:grid-cols-3 gap-2.5 h-fit">
+          <div className="card-3d rounded-2xl p-5 grid grid-cols-2 sm:grid-cols-3 gap-2.5 h-fit">
             {tables.map((tb) => (
               <div
                 key={tb.id}
-                className="p-3 rounded-xl border border-[#E7DDD0] bg-[#FAF7F2] flex items-center justify-between"
+                className="p-3 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] flex items-center justify-between"
               >
                 <div>
-                  <p className="font-semibold text-sm text-[#4A2C18]">{tb.name}</p>
-                  <p className="text-[11px] text-[#7B6554]">{tb.zone}</p>
+                  <p className="font-semibold text-sm text-[#14532D]">{tb.name}</p>
+                  <p className="text-[11px] text-[#2F6844]">{tb.zone}</p>
                 </div>
                 {canEdit && (
                   <button
@@ -752,16 +752,16 @@ export function MenuClient({
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
           <form
             onSubmit={handleSaveProduct}
-            className="bg-white rounded-2xl border border-[#E7DDD0] w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto"
+            className="card-3d rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between border-b border-[#F3ECE2] pb-3">
-              <h3 className="font-bold text-base text-[#4A2C18]">
+            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
+              <h3 className="font-bold text-base text-[#14532D]">
                 {editingProductId ? t.menu.editProduct : t.menu.addProduct}
               </h3>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#F3ECE2] cursor-pointer"
+                className="p-1 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -769,7 +769,7 @@ export function MenuClient({
 
             {/* Visual Photo Upload */}
             <div className="flex items-center gap-4">
-              <div className="relative w-24 h-24 rounded-2xl border border-[#E7DDD0] bg-[#FAF7F2] flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative w-24 h-24 rounded-2xl border border-[#CDE9D5] bg-[#F2FBF4] flex items-center justify-center overflow-hidden shrink-0">
                 {prodImage ? (
                   <Image
                     src={prodImage}
@@ -778,11 +778,11 @@ export function MenuClient({
                     className="object-cover"
                   />
                 ) : (
-                  <Coffee className="w-8 h-8 text-[#8C7563]" />
+                  <Coffee className="w-8 h-8 text-[#16A34A]" />
                 )}
               </div>
               <div className="flex-1 space-y-2">
-                <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#F3ECE2] hover:bg-[#E7DDD0] text-xs font-semibold text-[#4A2C18] cursor-pointer">
+                <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#EAFBF0] hover:bg-[#E7DDD0] text-xs font-semibold text-[#14532D] cursor-pointer">
                   <ImagePlus className="w-4 h-4" />
                   <span>
                     {uploadingImg ? t.common.loading : t.menu.uploadImage}
@@ -799,14 +799,14 @@ export function MenuClient({
                   value={prodImage}
                   onChange={(e) => setProdImage(e.target.value)}
                   placeholder={t.menu.imageUrlPlaceholder}
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-1.5 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.menu.productName}
                 </label>
                 <input
@@ -814,17 +814,17 @@ export function MenuClient({
                   required
                   value={prodName}
                   onChange={(e) => setProdName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.menu.category}
                 </label>
                 <select
                   value={prodCatId}
                   onChange={(e) => setProdCatId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0] bg-white"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
                 >
                   <option value="">{t.menu.noCategory}</option>
                   {categories.map((c) => (
@@ -835,7 +835,7 @@ export function MenuClient({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.menu.basePrice} ({currencyCode})
                 </label>
                 <input
@@ -844,27 +844,27 @@ export function MenuClient({
                   min="0"
                   value={prodPrice}
                   onChange={(e) => setProdPrice(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.menu.description}
                 </label>
                 <input
                   type="text"
                   value={prodDesc}
                   onChange={(e) => setProdDesc(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
             </div>
 
             {/* Sizes / Variants */}
-            <div className="border-t border-[#F3ECE2] pt-3 space-y-2">
+            <div className="border-t border-[#DDF3E4] pt-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#4A2C18] inline-flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#C97B36]" />
+                <span className="text-xs font-bold text-[#14532D] inline-flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-[#15803D]" />
                   {t.menu.sizesTitle}
                 </span>
                 <button
@@ -872,7 +872,7 @@ export function MenuClient({
                   onClick={() =>
                     setDraftSizes((prev) => [...prev, { name: "", price: "" }])
                   }
-                  className="text-xs font-semibold text-[#C97B36] hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#15803D] hover:underline cursor-pointer"
                 >
                   + {t.menu.addSize}
                 </button>
@@ -890,7 +890,7 @@ export function MenuClient({
                       )
                     }
                     placeholder={t.menu.sizeName}
-                    className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0]"
+                    className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5]"
                   />
                   <input
                     type="number"
@@ -904,7 +904,7 @@ export function MenuClient({
                       )
                     }
                     placeholder={t.menu.sizePrice}
-                    className="w-32 px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0]"
+                    className="w-32 px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5]"
                   />
                   <button
                     type="button"
@@ -923,14 +923,14 @@ export function MenuClient({
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[#E7DDD0] text-sm font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-[#CDE9D5] text-sm font-medium cursor-pointer"
               >
                 {t.common.cancel}
               </button>
               <button
                 type="submit"
                 disabled={savingProd}
-                className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
+                className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-60"
               >
                 {savingProd ? t.common.saving : t.common.save}
               </button>

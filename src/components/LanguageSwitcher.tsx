@@ -25,11 +25,11 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-xl border border-[#E7DDD0] bg-[#FAF7F2] p-1 ${
-        compact ? "text-[11px]" : "text-xs"
+      className={`inline-flex items-center gap-1 rounded-xl border border-[#BCE8C8] bg-[#EAFBF0] p-1 ${
+        compact ? "text-xs" : "text-xs"
       }`}
     >
-      {!compact && <Globe className="w-3.5 h-3.5 text-[#7B6554] ml-1.5 mr-0.5" />}
+      {!compact && <Globe className="w-4 h-4 text-[#15803D] ml-1.5 mr-0.5" />}
       {LOCALE_OPTIONS.map((opt) => {
         const active = opt.code === locale;
         return (
@@ -38,10 +38,10 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
             type="button"
             onClick={() => selectLocale(opt.code)}
             title={opt.label}
-            className={`px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
               active
-                ? "bg-[#4A2C18] text-white shadow-xs"
-                : "text-[#5C4938] hover:bg-[#E7DDD0]/60"
+                ? "bg-gradient-to-b from-[#22C55E] to-[#16A34A] text-white shadow-xs"
+                : "text-[#14532D] hover:bg-white/80"
             }`}
           >
             {opt.code === "lo" ? "ລາວ" : opt.code.toUpperCase()}

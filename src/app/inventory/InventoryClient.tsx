@@ -412,7 +412,7 @@ export function InventoryClient({
       )}
 
       {/* Tabs */}
-      <div className="inline-flex flex-wrap gap-1 bg-white p-1 rounded-xl border border-[#E7DDD0]">
+      <div className="inline-flex flex-wrap gap-1 bg-white p-1 rounded-xl border border-[#CDE9D5]">
         {(
           [
             ["stock", t.inventory.stockTab],
@@ -426,10 +426,10 @@ export function InventoryClient({
             key={k}
             type="button"
             onClick={() => setTab(k)}
-            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-sm sm:text-base font-medium cursor-pointer ${
               tab === k
-                ? "bg-[#4A2C18] text-white"
-                : "text-[#5C4938] hover:bg-[#F3ECE2]"
+                ? "bg-[#16A34A] text-white"
+                : "text-[#1E4D31] hover:bg-[#EAFBF0]"
             }`}
           >
             {label}
@@ -441,14 +441,14 @@ export function InventoryClient({
       {tab === "stock" && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-              <p className="text-xs text-[#7B6554]">{t.inventory.stockValue}</p>
-              <p className="text-xl font-bold text-[#4A2C18] mt-1">
+            <div className="card-3d rounded-2xl p-4">
+              <p className="text-xs text-[#2F6844]">{t.inventory.stockValue}</p>
+              <p className="text-xl font-bold text-[#14532D] mt-1">
                 {formatMoney(totalStockValue, currencyCode)}
               </p>
             </div>
-            <div className="bg-white rounded-2xl border border-[#E7DDD0] p-4">
-              <p className="text-xs text-[#7B6554]">{t.dashboard.lowStockTitle}</p>
+            <div className="card-3d rounded-2xl p-4">
+              <p className="text-xs text-[#2F6844]">{t.dashboard.lowStockTitle}</p>
               <p className="text-xl font-bold text-red-700 mt-1">
                 {
                   ingredients.filter(
@@ -461,9 +461,9 @@ export function InventoryClient({
 
           <form
             onSubmit={handleAddIngredient}
-            className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3"
+            className="card-3d rounded-2xl p-5 space-y-3"
           >
-            <h2 className="font-bold text-sm text-[#4A2C18]">
+            <h2 className="font-bold text-sm text-[#14532D]">
               {t.inventory.addIngredient}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
@@ -473,21 +473,21 @@ export function InventoryClient({
                 value={ingName}
                 onChange={(e) => setIngName(e.target.value)}
                 placeholder={t.inventory.ingredientName}
-                className="lg:col-span-2 px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="lg:col-span-2 px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="text"
                 value={ingPurchaseUnit}
                 onChange={(e) => setIngPurchaseUnit(e.target.value)}
                 placeholder={t.inventory.purchaseUnit}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="text"
                 value={ingBaseUnit}
                 onChange={(e) => setIngBaseUnit(e.target.value)}
                 placeholder={t.inventory.baseUnit}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="number"
@@ -497,7 +497,7 @@ export function InventoryClient({
                 onChange={(e) => setIngRate(e.target.value)}
                 placeholder={t.inventory.conversionRate}
                 title={t.inventory.conversionRate}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
               <input
                 type="number"
@@ -506,22 +506,22 @@ export function InventoryClient({
                 onChange={(e) => setIngMinAlert(e.target.value)}
                 placeholder={t.inventory.minStockAlert}
                 title={t.inventory.minStockAlert}
-                className="px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                className="px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
               />
             </div>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-xs font-semibold cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-semibold cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{t.inventory.addIngredient}</span>
             </button>
           </form>
 
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 overflow-x-auto">
-            <table className="w-full text-xs text-left">
+          <div className="card-3d rounded-2xl p-5 overflow-x-auto">
+            <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                   <th className="py-2 pr-3">{t.inventory.ingredientName}</th>
                   <th className="py-2 pr-3">{t.inventory.currentStock}</th>
                   <th className="py-2 pr-3">{t.inventory.purchaseUnit}</th>
@@ -529,7 +529,7 @@ export function InventoryClient({
                   <th className="py-2 pr-3">{t.inventory.stockValue}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3ECE2]">
+              <tbody className="divide-y divide-[#DDF3E4]">
                 {ingredients.map((ing) => {
                   const isLow =
                     Number(ing.current_stock) <= Number(ing.min_stock_alert);
@@ -539,7 +539,7 @@ export function InventoryClient({
                       : 0;
                   return (
                     <tr key={ing.id}>
-                      <td className="py-3 pr-3 font-semibold text-[#4A2C18]">
+                      <td className="py-3 pr-3 font-semibold text-[#14532D]">
                         {ing.name}
                         {isLow && (
                           <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px]">
@@ -552,7 +552,7 @@ export function InventoryClient({
                         {Number(ing.current_stock).toLocaleString("vi-VN")}{" "}
                         {ing.base_unit}
                       </td>
-                      <td className="py-3 pr-3 text-[#7B6554]">
+                      <td className="py-3 pr-3 text-[#2F6844]">
                         ≈ {equivPurchase.toFixed(2)} {ing.purchase_unit}
                       </td>
                       <td className="py-3 pr-3">
@@ -579,22 +579,22 @@ export function InventoryClient({
         <div className="space-y-5">
           <form
             onSubmit={handleSaveImport}
-            className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4"
+            className="card-3d rounded-2xl p-5 space-y-4"
           >
-            <div className="flex items-center gap-2 font-bold text-sm text-[#4A2C18]">
-              <PackagePlus className="w-5 h-5 text-[#C97B36]" />
+            <div className="flex items-center gap-2 font-bold text-sm text-[#14532D]">
+              <PackagePlus className="w-5 h-5 text-[#15803D]" />
               <h2>{t.inventory.newImportTitle}</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.inventory.supplier}
                 </label>
                 <select
                   value={impSupplierId}
                   onChange={(e) => setImpSupplierId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
                 >
                   <option value="">{t.inventory.noSupplier}</option>
                   {suppliers.map((s) => (
@@ -605,7 +605,7 @@ export function InventoryClient({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.inventory.importDate}
                 </label>
                 <input
@@ -613,18 +613,18 @@ export function InventoryClient({
                   required
                   value={impDate}
                   onChange={(e) => setImpDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.common.note}
                 </label>
                 <input
                   type="text"
                   value={impNote}
                   onChange={(e) => setImpNote(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
                 />
               </div>
             </div>
@@ -639,7 +639,7 @@ export function InventoryClient({
                 return (
                   <div
                     key={idx}
-                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E7DDD0]"
+                    className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-[#F2FBF4] p-2.5 rounded-xl border border-[#CDE9D5]"
                   >
                     <select
                       value={line.ingredientId}
@@ -650,7 +650,7 @@ export function InventoryClient({
                           )
                         )
                       }
-                      className="sm:col-span-4 px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                      className="sm:col-span-4 px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                     >
                       {ingredients.map((i) => (
                         <option key={i.id} value={i.id}>
@@ -671,7 +671,7 @@ export function InventoryClient({
                         )
                       }
                       placeholder={t.inventory.purchaseQty}
-                      className="sm:col-span-2 px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                      className="sm:col-span-2 px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                     />
                     <input
                       type="number"
@@ -685,7 +685,7 @@ export function InventoryClient({
                         )
                       }
                       placeholder={`${t.inventory.purchaseUnitPrice} (${currencyCode})`}
-                      className="sm:col-span-3 px-2.5 py-1.5 text-xs rounded-lg border border-[#E7DDD0] bg-white"
+                      className="sm:col-span-3 px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white"
                     />
                     <span className="sm:col-span-2 text-[11px] font-semibold text-emerald-700">
                       +{converted} {ing?.base_unit ?? ""}
@@ -715,54 +715,54 @@ export function InventoryClient({
                     },
                   ])
                 }
-                className="text-xs font-semibold text-[#C97B36] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-[#15803D] hover:underline cursor-pointer"
               >
                 + {t.inventory.addLine}
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#F3ECE2]">
-              <div className="text-sm font-bold text-[#4A2C18]">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#DDF3E4]">
+              <div className="text-base font-extrabold text-[#14532D]">
                 {t.inventory.totalImport}:{" "}
-                <span className="text-[#C97B36]">
+                <span className="text-[#15803D]">
                   {formatMoney(importTotalPreview, currencyCode)}
                 </span>
               </div>
               <button
                 type="submit"
                 disabled={savingImport || ingredients.length === 0}
-                className="px-4 py-2.5 rounded-xl bg-[#4A2C18] text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl bg-[#16A34A] text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
               >
                 {savingImport ? t.common.saving : t.inventory.saveImportBtn}
               </button>
             </div>
           </form>
 
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3">
-            <h3 className="font-bold text-sm text-[#4A2C18]">
+          <div className="card-3d rounded-2xl p-5 space-y-3">
+            <h3 className="font-bold text-sm text-[#14532D]">
               {t.inventory.importHistory}
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+              <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+                  <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                     <th className="py-2 pr-3">{t.common.date}</th>
                     <th className="py-2 pr-3">{t.inventory.supplier}</th>
                     <th className="py-2 pr-3">{t.common.total}</th>
                     <th className="py-2 pr-3">{t.common.note}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F3ECE2]">
+                <tbody className="divide-y divide-[#DDF3E4]">
                   {imports.map((imp) => (
                     <tr key={imp.id}>
                       <td className="py-2.5 pr-3">{imp.import_date}</td>
                       <td className="py-2.5 pr-3">
                         {imp.suppliers?.name ?? t.inventory.noSupplier}
                       </td>
-                      <td className="py-2.5 pr-3 font-bold text-[#4A2C18]">
+                      <td className="py-2.5 pr-3 font-bold text-[#14532D]">
                         {formatMoney(imp.total_amount, currencyCode)}
                       </td>
-                      <td className="py-2.5 pr-3 text-[#7B6554]">{imp.note}</td>
+                      <td className="py-2.5 pr-3 text-[#2F6844]">{imp.note}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -774,15 +774,15 @@ export function InventoryClient({
 
       {/* TAB 3: RECIPES */}
       {tab === "recipes" && (
-        <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-4">
+        <div className="card-3d rounded-2xl p-5 space-y-4">
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setRecipeTargetType("product")}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold border cursor-pointer ${
                 recipeTargetType === "product"
-                  ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                  : "bg-[#FAF7F2] text-[#4A2C18] border-[#E7DDD0]"
+                  ? "bg-[#16A34A] text-white border-[#16A34A]"
+                  : "bg-[#F2FBF4] text-[#14532D] border-[#CDE9D5]"
               }`}
             >
               {t.menu.productsTab}
@@ -792,8 +792,8 @@ export function InventoryClient({
               onClick={() => setRecipeTargetType("topping")}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold border cursor-pointer ${
                 recipeTargetType === "topping"
-                  ? "bg-[#4A2C18] text-white border-[#4A2C18]"
-                  : "bg-[#FAF7F2] text-[#4A2C18] border-[#E7DDD0]"
+                  ? "bg-[#16A34A] text-white border-[#16A34A]"
+                  : "bg-[#F2FBF4] text-[#14532D] border-[#CDE9D5]"
               }`}
             >
               {t.menu.toppingsTab}
@@ -803,7 +803,7 @@ export function InventoryClient({
           {recipeTargetType === "product" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.inventory.selectProductRecipe}
                 </label>
                 <select
@@ -812,7 +812,7 @@ export function InventoryClient({
                     setRecipeProductId(e.target.value);
                     setRecipeVariantId("");
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -822,13 +822,13 @@ export function InventoryClient({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#4A3828] mb-1">
+                <label className="block text-base font-extrabold text-[#14532D] mb-1">
                   {t.inventory.selectVariantRecipe}
                 </label>
                 <select
                   value={recipeVariantId}
                   onChange={(e) => setRecipeVariantId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
                 >
                   <option value="">{t.inventory.allVariants}</option>
                   {productVariants.map((v) => (
@@ -841,13 +841,13 @@ export function InventoryClient({
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-medium text-[#4A3828] mb-1">
+              <label className="block text-base font-extrabold text-[#14532D] mb-1">
                 {t.menu.toppingName}
               </label>
               <select
                 value={recipeToppingId}
                 onChange={(e) => setRecipeToppingId(e.target.value)}
-                className="w-full max-w-sm px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+                className="w-full max-w-sm px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
               >
                 {toppings.map((tp) => (
                   <option key={tp.id} value={tp.id}>
@@ -858,7 +858,7 @@ export function InventoryClient({
             </div>
           )}
 
-          <p className="text-xs text-[#7B6554]">{t.inventory.recipeHint}</p>
+          <p className="text-xs text-[#2F6844]">{t.inventory.recipeHint}</p>
 
           <form
             onSubmit={handleAddRecipeLine}
@@ -867,7 +867,7 @@ export function InventoryClient({
             <select
               value={recipeIngId}
               onChange={(e) => setRecipeIngId(e.target.value)}
-              className="flex-1 min-w-[180px] px-3 py-2 text-xs rounded-xl border border-[#E7DDD0] bg-white"
+              className="flex-1 min-w-[180px] px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
             >
               {ingredients.map((i) => (
                 <option key={i.id} value={i.id}>
@@ -882,17 +882,17 @@ export function InventoryClient({
               value={recipeQty}
               onChange={(e) => setRecipeQty(e.target.value)}
               placeholder={t.inventory.qtyRequired}
-              className="w-36 px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-36 px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-xs font-semibold cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-semibold cursor-pointer"
             >
               + {t.inventory.addRecipeIngredient}
             </button>
           </form>
 
-          <div className="divide-y divide-[#F3ECE2] text-xs">
+          <div className="divide-y divide-[#DDF3E4] text-xs">
             {currentRecipeLines.map((r) => {
               const ing = ingMap.get(r.ingredient_id);
               const lineCost =
@@ -907,7 +907,7 @@ export function InventoryClient({
                     {ing?.base_unit}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-[#7B6554]">
+                    <span className="text-[#2F6844]">
                       {formatMoney(lineCost, currencyCode)}
                     </span>
                     <button
@@ -923,10 +923,10 @@ export function InventoryClient({
             })}
           </div>
 
-          <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7DDD0] flex flex-wrap justify-between gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-[#F2FBF4] border border-[#CDE9D5] flex flex-wrap justify-between gap-3 text-xs">
             <span>
               {t.inventory.estimatedCost}:{" "}
-              <strong className="text-[#4A2C18]">
+              <strong className="text-[#14532D]">
                 {formatMoney(estimatedCogs, currencyCode)}
               </strong>
             </span>
@@ -942,13 +942,13 @@ export function InventoryClient({
 
       {/* TAB 4: MOVEMENTS LEDGER */}
       {tab === "movements" && (
-        <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 overflow-x-auto">
-          <h2 className="font-bold text-sm text-[#4A2C18]">
+        <div className="card-3d rounded-2xl p-5 space-y-3 overflow-x-auto">
+          <h2 className="font-bold text-sm text-[#14532D]">
             {t.inventory.movementsTitle}
           </h2>
-          <table className="w-full text-xs text-left">
+          <table className="w-full text-sm text-left">
             <thead>
-              <tr className="border-b border-[#E7DDD0] text-[#7B6554]">
+              <tr className="border-b border-[#CDE9D5] text-[#2F6844]">
                 <th className="py-2 pr-3">{t.common.date}</th>
                 <th className="py-2 pr-3">{t.inventory.ingredientName}</th>
                 <th className="py-2 pr-3">{t.common.status}</th>
@@ -957,13 +957,13 @@ export function InventoryClient({
                 <th className="py-2 pr-3">{t.common.note}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F3ECE2]">
+            <tbody className="divide-y divide-[#DDF3E4]">
               {movements.map((m) => (
                 <tr key={m.id}>
-                  <td className="py-2 pr-3 text-[#7B6554]">
+                  <td className="py-2 pr-3 text-[#2F6844]">
                     {formatDateTimeVN(m.created_at)}
                   </td>
-                  <td className="py-2 pr-3 font-semibold text-[#4A2C18]">
+                  <td className="py-2 pr-3 font-semibold text-[#14532D]">
                     {m.ingredients?.name}
                   </td>
                   <td className="py-2 pr-3">
@@ -982,7 +982,7 @@ export function InventoryClient({
                   <td className="py-2 pr-3">
                     {m.stock_after} {m.ingredients?.base_unit}
                   </td>
-                  <td className="py-2 pr-3 text-[#7B6554]">{m.note}</td>
+                  <td className="py-2 pr-3 text-[#2F6844]">{m.note}</td>
                 </tr>
               ))}
             </tbody>
@@ -995,9 +995,9 @@ export function InventoryClient({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <form
             onSubmit={handleAddSupplier}
-            className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-3 h-fit"
+            className="card-3d rounded-2xl p-5 space-y-3 h-fit"
           >
-            <h2 className="font-bold text-sm text-[#4A2C18]">
+            <h2 className="font-bold text-sm text-[#14532D]">
               {t.inventory.addSupplier}
             </h2>
             <input
@@ -1006,38 +1006,38 @@ export function InventoryClient({
               value={supName}
               onChange={(e) => setSupName(e.target.value)}
               placeholder={t.inventory.supplierName}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <input
               type="text"
               value={supPhone}
               onChange={(e) => setSupPhone(e.target.value)}
               placeholder={t.inventory.supplierPhone}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <input
               type="text"
               value={supAddress}
               onChange={(e) => setSupAddress(e.target.value)}
               placeholder={t.inventory.supplierAddress}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7DDD0]"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#4A2C18] text-white text-xs font-semibold cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-semibold cursor-pointer"
             >
               {t.common.add}
             </button>
           </form>
 
-          <div className="bg-white rounded-2xl border border-[#E7DDD0] p-5 space-y-2">
+          <div className="card-3d rounded-2xl p-5 space-y-2">
             {suppliers.map((s) => (
               <div
                 key={s.id}
-                className="py-2 border-b border-[#F3ECE2] last:border-0 text-xs"
+                className="py-2 border-b border-[#DDF3E4] last:border-0 text-xs"
               >
-                <p className="font-bold text-[#4A2C18]">{s.name}</p>
-                <p className="text-[#7B6554]">
+                <p className="font-bold text-[#14532D]">{s.name}</p>
+                <p className="text-[#2F6844]">
                   {s.phone} {s.address ? `• ${s.address}` : ""}
                 </p>
               </div>

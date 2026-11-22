@@ -4,11 +4,12 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { url, anonKey, isConfigured } = getSupabaseEnv();
 
   if (pathname.startsWith("/api/locale")) {
     return NextResponse.next();
   }
+
+  const { url, anonKey, isConfigured } = getSupabaseEnv();
 
   if (!isConfigured) {
     if (pathname !== "/login") {
@@ -36,18 +37,17 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() validates JWT locally when asymmetric keys are enabled (much faster than getUser())
+  const { data } = await supabase.auth.getClaims();
+  const isAuthenticated = Boolean(data?.claims?.sub);
 
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/auth");
 
-  if (!user && !isAuthRoute) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  if (!isAuthenticated && !isAuthRoute) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && pathname === "/login") {
+  if (isAuthenticated && pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
