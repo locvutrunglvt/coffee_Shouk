@@ -1,31 +1,35 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { getDictionary, type Dictionary, type Locale } from "@/lib/i18n";
+import type { Dictionary, Locale } from "@/lib/i18n";
 
 interface I18nContextValue {
   locale: Locale;
   t: Dictionary;
 }
 
-const I18nContext = createContext<I18nContextValue>({
-  locale: "vi",
-  t: getDictionary("vi"),
-});
+const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({
   locale,
+  dictionary,
   children,
 }: {
   locale: Locale;
+  dictionary: Dictionary;
   children: React.ReactNode;
 }) {
-  const t = getDictionary(locale);
   return (
-    <I18nContext.Provider value={{ locale, t }}>{children}</I18nContext.Provider>
+    <I18nContext.Provider value={{ locale, t: dictionary }}>
+      {children}
+    </I18nContext.Provider>
   );
 }
 
 export function useT() {
-  return useContext(I18nContext);
+  const ctx = useContext(I18nContext);
+  if (!ctx) {
+    throw new Error("useT must be used within I18nProvider");
+  }
+  return ctx;
 }

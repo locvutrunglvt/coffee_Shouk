@@ -13,37 +13,44 @@ import {
 } from "./MenuClient";
 
 export default async function MenuPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/menu"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const [catRes, prodRes, varRes, topRes, tableRes] = supabase
-    ? await Promise.all([
-        supabase
-          .from("categories")
-          .select("*")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("products")
-          .select("*")
-          .eq("is_active", true)
-          .order("created_at", { ascending: true }),
-        supabase.from("product_variants").select("*").eq("is_active", true),
-        supabase
-          .from("toppings")
-          .select("*")
-          .eq("is_active", true)
-          .order("name", { ascending: true }),
-        supabase
-          .from("dining_tables")
-          .select("*")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true }),
-      ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
+  const [{ profile, settings }, { t }, catRes, prodRes, varRes, topRes, tableRes] =
+    await Promise.all([
+      requireRouteAccess("/menu"),
+      getServerI18n(),
+      supabase
+        ? supabase
+            .from("categories")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("products")
+            .select("*")
+            .eq("is_active", true)
+            .order("created_at", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase.from("product_variants").select("*").eq("is_active", true)
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("toppings")
+            .select("*")
+            .eq("is_active", true)
+            .order("name", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("dining_tables")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: [] }),
+    ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

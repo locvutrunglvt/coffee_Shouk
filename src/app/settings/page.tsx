@@ -6,18 +6,18 @@ import { getServerI18n } from "@/lib/i18n/server";
 import { SettingsClient } from "./SettingsClient";
 
 export default async function SettingsPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/settings"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const { data: allProfiles } = supabase
-    ? await supabase
-        .from("profiles")
-        .select("id, full_name, email, phone, role, is_active")
-        .order("created_at", { ascending: true })
-    : { data: [] };
+  const [{ profile, settings }, { t }, { data: allProfiles }] = await Promise.all([
+    requireRouteAccess("/settings", { includeQr: true }),
+    getServerI18n(),
+    supabase
+      ? supabase
+          .from("profiles")
+          .select("id, full_name, email, phone, role, is_active")
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

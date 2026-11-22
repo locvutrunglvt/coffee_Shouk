@@ -91,7 +91,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-white/95 backdrop-blur-sm border-r-2 border-[#CDE9D5] shadow-[4px_0_24px_-8px_rgba(22,163,74,0.14)] z-30">
+      <aside className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-white border-r-2 border-[#CDE9D5] shadow-[4px_0_24px_-8px_rgba(22,163,74,0.14)] z-30">
         <div className="flex items-center gap-3 px-4 py-4 border-b border-[#DDF3E4] bg-gradient-to-r from-[#EAFBF0] to-white">
           <Image
             src="/logo-taoi.jpeg"
@@ -123,7 +123,6 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                prefetch={false}
                 onClick={() => handleNavClick(item.href)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[15px] font-bold transition-all ${
                   active
@@ -168,7 +167,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-2 px-3 py-2.5 bg-white/95 backdrop-blur-sm border-b-2 border-[#CDE9D5] shadow-xs">
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-2 px-3 py-2.5 bg-white border-b-2 border-[#CDE9D5] shadow-xs">
         <div className="flex items-center gap-2.5 min-w-0">
           <Image
             src="/logo-taoi.jpeg"
@@ -237,7 +236,6 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    prefetch={false}
                     onClick={() => handleNavClick(item.href)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-base font-bold ${
                       active
@@ -276,7 +274,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-sm border-t-2 border-[#CDE9D5] flex items-center justify-around px-1 py-1.5 shadow-[0_-4px_16px_rgba(22,163,74,0.1)]">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t-2 border-[#CDE9D5] flex items-center justify-around px-1 py-1.5 shadow-[0_-4px_16px_rgba(22,163,74,0.1)]">
         {bottomNavItems.map((item) => {
           const Icon = ICON_MAP[item.iconName];
           const active = isActiveRoute(item.href);
@@ -284,7 +282,6 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
             <Link
               key={item.href}
               href={item.href}
-              prefetch={false}
               onClick={() => handleNavClick(item.href)}
               className={`flex flex-col items-center justify-center px-2 py-1 rounded-xl min-w-[62px] ${
                 active ? "text-[#15803D] font-extrabold" : "text-[#3B6B4C] font-semibold"

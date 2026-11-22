@@ -14,62 +14,75 @@ import {
 import type { ProductRow, ToppingRow, VariantRow } from "@/app/menu/MenuClient";
 
 export default async function InventoryPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/inventory"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const [ingRes, supRes, impRes, movRes, recRes, prodRes, varRes, topRes] =
+  const [
+    { profile, settings },
+    { t },
+    ingRes,
+    supRes,
+    impRes,
+    movRes,
+    recRes,
+    prodRes,
+    varRes,
+    topRes,
+  ] = await Promise.all([
+    requireRouteAccess("/inventory"),
+    getServerI18n(),
     supabase
-      ? await Promise.all([
-          supabase
-            .from("ingredients")
-            .select("*")
-            .eq("is_active", true)
-            .order("name", { ascending: true }),
-          supabase
-            .from("suppliers")
-            .select("*")
-            .eq("is_active", true)
-            .order("name", { ascending: true }),
-          supabase
-            .from("stock_imports")
-            .select(
-              "id, import_code, import_date, total_amount, note, suppliers(name)"
-            )
-            .order("created_at", { ascending: false })
-            .limit(20),
-          supabase
-            .from("stock_movements")
-            .select(
-              "id, ingredient_id, movement_type, quantity_change, stock_after, unit_cost, note, created_at, ingredients(name, base_unit)"
-            )
-            .order("created_at", { ascending: false })
-            .limit(50),
-          supabase.from("recipes").select("*"),
-          supabase
-            .from("products")
-            .select("*")
-            .eq("is_active", true)
-            .order("name", { ascending: true }),
-          supabase.from("product_variants").select("*").eq("is_active", true),
-          supabase
-            .from("toppings")
-            .select("*")
-            .eq("is_active", true)
-            .order("name", { ascending: true }),
-        ])
-      : [
-          { data: [] },
-          { data: [] },
-          { data: [] },
-          { data: [] },
-          { data: [] },
-          { data: [] },
-          { data: [] },
-          { data: [] },
-        ];
+      ? supabase
+          .from("ingredients")
+          .select("*")
+          .eq("is_active", true)
+          .order("name", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
+          .from("suppliers")
+          .select("*")
+          .eq("is_active", true)
+          .order("name", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
+          .from("stock_imports")
+          .select(
+            "id, import_code, import_date, total_amount, note, suppliers(name)"
+          )
+          .order("created_at", { ascending: false })
+          .limit(20)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
+          .from("stock_movements")
+          .select(
+            "id, ingredient_id, movement_type, quantity_change, stock_after, unit_cost, note, created_at, ingredients(name, base_unit)"
+          )
+          .order("created_at", { ascending: false })
+          .limit(50)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase.from("recipes").select("*")
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
+          .from("products")
+          .select("id, category_id, name, base_price, is_available, is_active")
+          .eq("is_active", true)
+          .order("name", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase.from("product_variants").select("*").eq("is_active", true)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
+          .from("toppings")
+          .select("*")
+          .eq("is_active", true)
+          .order("name", { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

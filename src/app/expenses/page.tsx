@@ -10,26 +10,26 @@ import {
 } from "./ExpensesClient";
 
 export default async function ExpensesPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/expenses"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const [expRes, recRes] = supabase
-    ? await Promise.all([
-        supabase
+  const [{ profile, settings }, { t }, expRes, recRes] = await Promise.all([
+    requireRouteAccess("/expenses"),
+    getServerI18n(),
+    supabase
+      ? supabase
           .from("expenses")
           .select("*")
           .order("expense_date", { ascending: false })
-          .limit(100),
-        supabase
+          .limit(100)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
           .from("recurring_expenses")
           .select("*")
           .eq("is_active", true)
-          .order("next_due_date", { ascending: true }),
-      ])
-    : [{ data: [] }, { data: [] }];
+          .order("next_due_date", { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

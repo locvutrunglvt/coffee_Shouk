@@ -11,34 +11,37 @@ import {
 } from "./StockTakeClient";
 
 export default async function StockTakePage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/stock-take"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const [ingRes, draftRes, histRes] = supabase
-    ? await Promise.all([
-        supabase
-          .from("ingredients")
-          .select("*")
-          .eq("is_active", true)
-          .order("name", { ascending: true }),
-        supabase
-          .from("stock_takes")
-          .select("*")
-          .eq("status", "draft")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("stock_takes")
-          .select("*")
-          .eq("status", "finalized")
-          .order("finalized_at", { ascending: false })
-          .limit(20),
-      ])
-    : [{ data: [] }, { data: null }, { data: [] }];
+  const [{ profile, settings }, { t }, ingRes, draftRes, histRes] =
+    await Promise.all([
+      requireRouteAccess("/stock-take"),
+      getServerI18n(),
+      supabase
+        ? supabase
+            .from("ingredients")
+            .select("*")
+            .eq("is_active", true)
+            .order("name", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("stock_takes")
+            .select("*")
+            .eq("status", "draft")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase
+        ? supabase
+            .from("stock_takes")
+            .select("*")
+            .eq("status", "finalized")
+            .order("finalized_at", { ascending: false })
+            .limit(20)
+        : Promise.resolve({ data: [] }),
+    ]);
 
   const draft = (draftRes.data as StockTakeRow | null) ?? null;
 

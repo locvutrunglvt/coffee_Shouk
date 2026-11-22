@@ -29,7 +29,21 @@ export interface ShopSettings {
   emvco_base_qr?: string;
 }
 
-export const getAuthContext = cache(async () => {
+const SETTINGS_LITE_COLUMNS =
+  "id, shop_name, address, phone, currency_code, currency_symbol, bank_info, qr_mode, vietqr_bank_id, vietqr_account_no, vietqr_account_name";
+
+const DEFAULT_SETTINGS: ShopSettings = {
+  id: 1,
+  shop_name: "Tà Ơi Coffee",
+  address: "",
+  phone: "",
+  currency_code: "LAK",
+  currency_symbol: "₭",
+  qr_image_url: "",
+  bank_info: "",
+};
+
+const fetchAuthCore = cache(async () => {
   const { isConfigured } = getSupabaseEnv();
   if (!isConfigured) {
     return { isConfigured: false as const, profile: null, settings: null };
@@ -40,10 +54,13 @@ export const getAuthContext = cache(async () => {
     return { isConfigured: false as const, profile: null, settings: null };
   }
 
-  // Run getClaims() + shop_settings in parallel to cut server latency
   const [{ data: claimsData }, settingsRes] = await Promise.all([
     supabase.auth.getClaims(),
-    supabase.from("shop_settings").select("*").eq("id", 1).single(),
+    supabase
+      .from("shop_settings")
+      .select(SETTINGS_LITE_COLUMNS)
+      .eq("id", 1)
+      .single(),
   ]);
 
   const userId = claimsData?.claims?.sub as string | undefined;
@@ -69,21 +86,40 @@ export const getAuthContext = cache(async () => {
       role: "staff" as UserRole,
       is_active: true,
     },
-    settings: (settingsRes.data as ShopSettings | null) ?? {
-      id: 1,
-      shop_name: "Tà Ơi Coffee",
-      address: "",
-      phone: "",
-      currency_code: "LAK",
-      currency_symbol: "₭",
-      qr_image_url: "",
-      bank_info: "",
+    settings: {
+      ...DEFAULT_SETTINGS,
+      ...(settingsRes.data as Partial<ShopSettings> | null),
     },
   };
 });
 
-export async function requireRouteAccess(pathname: string) {
-  const ctx = await getAuthContext();
+export const getAuthContext = cache(async () => {
+  return fetchAuthCore();
+});
+
+const fetchSettingsQrExtras = cache(async () => {
+  const supabase = await createClient();
+  if (!supabase) return { qr_image_url: "", emvco_base_qr: "" };
+  const { data } = await supabase
+    .from("shop_settings")
+    .select("qr_image_url, emvco_base_qr")
+    .eq("id", 1)
+    .single();
+  return {
+    qr_image_url: (data?.qr_image_url as string | undefined) ?? "",
+    emvco_base_qr: (data?.emvco_base_qr as string | undefined) ?? "",
+  };
+});
+
+export async function requireRouteAccess(
+  pathname: string,
+  options?: { includeQr?: boolean }
+) {
+  const [ctx, qrExtras] = await Promise.all([
+    fetchAuthCore(),
+    options?.includeQr ? fetchSettingsQrExtras() : Promise.resolve(null),
+  ]);
+
   if (!ctx.isConfigured || !ctx.profile) {
     redirect("/login");
   }
@@ -96,8 +132,13 @@ export async function requireRouteAccess(pathname: string) {
     }
     redirect("/unauthorized");
   }
+
+  const settings = qrExtras
+    ? { ...ctx.settings!, ...qrExtras }
+    : ctx.settings!;
+
   return {
     profile: ctx.profile,
-    settings: ctx.settings!,
+    settings,
   };
 }

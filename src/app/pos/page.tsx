@@ -13,63 +13,75 @@ import type {
 } from "@/app/menu/MenuClient";
 
 export default async function PosPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/pos"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [catRes, prodRes, varRes, topRes, tableRes, shiftRes, ordersRes] = supabase
-    ? await Promise.all([
-        supabase
+  const [
+    { profile, settings },
+    { t },
+    catRes,
+    prodRes,
+    varRes,
+    topRes,
+    tableRes,
+    shiftRes,
+    ordersRes,
+  ] = await Promise.all([
+    requireRouteAccess("/pos", { includeQr: true }),
+    getServerI18n(),
+    supabase
+      ? supabase
           .from("categories")
           .select("*")
           .eq("is_active", true)
-          .order("sort_order", { ascending: true }),
-        supabase
+          .order("sort_order", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
           .from("products")
           .select("*")
           .eq("is_active", true)
-          .order("created_at", { ascending: true }),
-        supabase.from("product_variants").select("*").eq("is_active", true),
-        supabase
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase.from("product_variants").select("*").eq("is_active", true)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
           .from("toppings")
           .select("*")
           .eq("is_active", true)
-          .order("name", { ascending: true }),
-        supabase
+          .order("name", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
           .from("dining_tables")
           .select("*")
           .eq("is_active", true)
-          .order("sort_order", { ascending: true }),
-        supabase
+          .order("sort_order", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase
           .from("shifts")
           .select("id")
           .eq("status", "open")
           .order("opened_at", { ascending: false })
           .limit(1)
-          .maybeSingle(),
-        supabase
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      ? supabase
           .from("orders")
           .select(
             "id, order_number, order_type, status, total_amount, payment_method, payment_status, created_at, table_id, dining_tables(name), order_items(product_id, variant_id, product_name, variant_name, quantity, unit_price, toppings_json, line_total, note)"
           )
           .gte("created_at", todayStart.toISOString())
           .order("created_at", { ascending: false })
-          .limit(15),
-      ])
-    : [
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: null },
-        { data: [] },
-      ];
+          .limit(15)
+      : Promise.resolve({ data: [] }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

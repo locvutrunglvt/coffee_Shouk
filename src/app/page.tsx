@@ -21,41 +21,46 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [ordersRes, lowStockRes, recurringRes, openShiftRes] = supabase
-    ? await Promise.all([
-        supabase
-          .from("orders")
-          .select("total_amount, payment_status, status")
-          .gte("created_at", todayStart.toISOString())
-          .eq("payment_status", "paid")
-          .neq("status", "cancelled"),
-        supabase
-          .from("ingredients")
-          .select("id, name, current_stock, min_stock_alert, base_unit")
-          .eq("is_active", true),
-        supabase
-          .from("recurring_expenses")
-          .select("id, title, amount, next_due_date, expense_group")
-          .eq("is_active", true)
-          .order("next_due_date", { ascending: true })
-          .limit(3),
-        supabase
-          .from("shifts")
-          .select("id, opened_at, opening_cash")
-          .eq("status", "open")
-          .limit(1)
-          .maybeSingle(),
-      ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: null }];
+  const [{ profile, settings }, { t }, ordersRes, lowStockRes, recurringRes, openShiftRes] =
+    await Promise.all([
+      requireRouteAccess("/"),
+      getServerI18n(),
+      supabase
+        ? supabase
+            .from("orders")
+            .select("total_amount, payment_status, status")
+            .gte("created_at", todayStart.toISOString())
+            .eq("payment_status", "paid")
+            .neq("status", "cancelled")
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("ingredients")
+            .select("id, name, current_stock, min_stock_alert, base_unit")
+            .eq("is_active", true)
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("recurring_expenses")
+            .select("id, title, amount, next_due_date, expense_group")
+            .eq("is_active", true)
+            .order("next_due_date", { ascending: true })
+            .limit(3)
+        : Promise.resolve({ data: [] }),
+      supabase
+        ? supabase
+            .from("shifts")
+            .select("id, opened_at, opening_cash")
+            .eq("status", "open")
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
   const todayOrders = ordersRes.data ?? [];
   const todayRevenue = todayOrders.reduce(

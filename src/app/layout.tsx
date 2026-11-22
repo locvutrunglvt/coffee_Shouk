@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { getServerLocale } from "@/lib/i18n/server";
+import { getServerI18n } from "@/lib/i18n/server";
 import { I18nProvider } from "@/components/I18nProvider";
 import "./globals.css";
 
@@ -22,12 +22,14 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const locale = await getServerLocale();
+  const { locale, t } = await getServerI18n();
 
   return (
     <html lang={locale} className="h-full antialiased">
       <body className="min-h-full flex flex-col text-[#143321]">
-        <I18nProvider locale={locale}>{children}</I18nProvider>
+        <I18nProvider locale={locale} dictionary={t}>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

@@ -223,7 +223,7 @@ export function OrderPublicClient({
   return (
     <div className="min-h-screen pb-28">
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b-2 border-[#CDE9D5]">
+      <header className="sticky top-0 z-30 bg-white border-b-2 border-[#CDE9D5]">
         <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <Image
@@ -670,7 +670,7 @@ export function OrderPublicClient({
 
       {/* Sticky Bottom Action Bar matching the mobile video */}
       {!confirmed && totalCount > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-sm border-t-2 border-[#CDE9D5] px-4 py-3 shadow-[0_-4px_16px_rgba(22,163,74,0.12)]">
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-white border-t-2 border-[#CDE9D5] px-4 py-3 shadow-[0_-4px_16px_rgba(22,163,74,0.12)]">
           <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
             {step > 1 && (
               <button

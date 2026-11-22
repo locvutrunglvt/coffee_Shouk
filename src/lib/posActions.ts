@@ -86,21 +86,36 @@ export async function deductStockAndSyncShift(
         .select("id, current_stock, avg_unit_cost")
         .in("id", ingIds);
 
-      if (ingredients) {
+      if (ingredients && ingredients.length > 0) {
+        const nowIso = new Date().toISOString();
+        const updates: Promise<unknown>[] = [];
+        const movements: {
+          ingredient_id: string;
+          movement_type: "sale_deduction";
+          quantity_change: number;
+          stock_after: number;
+          unit_cost: number;
+          reference_id: string;
+          note: string;
+          created_by: string;
+        }[] = [];
+
         for (const ing of ingredients) {
           const deduct = neededByIngredient.get(ing.id) ?? 0;
           if (deduct <= 0) continue;
           const nextStock = Number(ing.current_stock) - deduct;
 
-          await supabase
-            .from("ingredients")
-            .update({
-              current_stock: nextStock,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", ing.id);
+          updates.push(
+            supabase
+              .from("ingredients")
+              .update({
+                current_stock: nextStock,
+                updated_at: nowIso,
+              })
+              .eq("id", ing.id) as unknown as Promise<unknown>
+          );
 
-          await supabase.from("stock_movements").insert({
+          movements.push({
             ingredient_id: ing.id,
             movement_type: "sale_deduction",
             quantity_change: -deduct,
@@ -110,6 +125,13 @@ export async function deductStockAndSyncShift(
             note: orderNumber ? `Order #${orderNumber}` : "POS Sale",
             created_by: userId,
           });
+        }
+
+        if (updates.length > 0) {
+          await Promise.all([
+            ...updates,
+            supabase.from("stock_movements").insert(movements),
+          ]);
         }
       }
     }

@@ -11,50 +11,49 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
-  const [{ profile, settings }, { t }, params] = await Promise.all([
-    requireRouteAccess("/reports"),
-    getServerI18n(),
-    searchParams,
-  ]);
-  const supabase = await createClient();
+  const [params, supabase] = await Promise.all([searchParams, createClient()]);
 
   const currentMonth =
     params.month && /^\d{4}-\d{2}$/.test(params.month)
       ? params.month
       : new Date().toISOString().slice(0, 7);
 
-  const summary = supabase
-    ? await computeMonthlyPnL(supabase, currentMonth)
-    : await Promise.resolve({
-        month: currentMonth,
-        ordersCount: 0,
-        netRevenue: 0,
-        cashRevenue: 0,
-        qrRevenue: 0,
-        otherRevenue: 0,
-        cogs: 0,
-        stockLoss: 0,
-        grossProfit: 0,
-        totalOperatingExpenses: 0,
-        netProfit: 0,
-        profitMarginPct: 0,
-        breakEvenDaily: 0,
-        expenseByGroup: {
-          rent: 0,
-          electricity: 0,
-          water: 0,
-          internet: 0,
-          payroll: 0,
-          maintenance: 0,
-          marketing: 0,
-          shift_petty_cash: 0,
-          other: 0,
-        },
-        topProducts: [],
-        rawOrders: [],
-        rawExpenses: [],
-        rawMovements: [],
-      });
+  const [{ profile, settings }, { t }, summary] = await Promise.all([
+    requireRouteAccess("/reports"),
+    getServerI18n(),
+    supabase
+      ? computeMonthlyPnL(supabase, currentMonth)
+      : Promise.resolve({
+          month: currentMonth,
+          ordersCount: 0,
+          netRevenue: 0,
+          cashRevenue: 0,
+          qrRevenue: 0,
+          otherRevenue: 0,
+          cogs: 0,
+          stockLoss: 0,
+          grossProfit: 0,
+          totalOperatingExpenses: 0,
+          netProfit: 0,
+          profitMarginPct: 0,
+          breakEvenDaily: 0,
+          expenseByGroup: {
+            rent: 0,
+            electricity: 0,
+            water: 0,
+            internet: 0,
+            payroll: 0,
+            maintenance: 0,
+            marketing: 0,
+            shift_petty_cash: 0,
+            other: 0,
+          },
+          topProducts: [],
+          rawOrders: [],
+          rawExpenses: [],
+          rawMovements: [],
+        }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

@@ -10,29 +10,29 @@ import {
 } from "./ShiftsClient";
 
 export default async function ShiftsPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/shifts"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const [openRes, closedRes] = supabase
-    ? await Promise.all([
-        supabase
+  const [{ profile, settings }, { t }, openRes, closedRes] = await Promise.all([
+    requireRouteAccess("/shifts"),
+    getServerI18n(),
+    supabase
+      ? supabase
           .from("shifts")
           .select("*")
           .eq("status", "open")
           .order("opened_at", { ascending: false })
           .limit(1)
-          .maybeSingle(),
-        supabase
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      ? supabase
           .from("shifts")
           .select("*")
           .eq("status", "closed")
           .order("closed_at", { ascending: false })
-          .limit(15),
-      ])
-    : [{ data: null }, { data: [] }];
+          .limit(15)
+      : Promise.resolve({ data: [] }),
+  ]);
 
   const openShift = (openRes.data as ShiftRow | null) ?? null;
 

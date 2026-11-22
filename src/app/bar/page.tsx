@@ -6,21 +6,21 @@ import { getServerI18n } from "@/lib/i18n/server";
 import { BarClient, type BarOrder } from "./BarClient";
 
 export default async function BarPage() {
-  const [{ profile, settings }, { t }] = await Promise.all([
-    requireRouteAccess("/bar"),
-    getServerI18n(),
-  ]);
   const supabase = await createClient();
 
-  const { data } = supabase
-    ? await supabase
-        .from("orders")
-        .select(
-          "id, order_number, order_type, status, note, created_at, dining_tables(name), order_items(id, product_name, variant_name, quantity, toppings_json, note)"
-        )
-        .in("status", ["pending", "preparing", "ready"])
-        .order("created_at", { ascending: true })
-    : { data: [] };
+  const [{ profile, settings }, { t }, { data }] = await Promise.all([
+    requireRouteAccess("/bar"),
+    getServerI18n(),
+    supabase
+      ? supabase
+          .from("orders")
+          .select(
+            "id, order_number, order_type, status, note, created_at, dining_tables(name), order_items(id, product_name, variant_name, quantity, toppings_json, note)"
+          )
+          .in("status", ["pending", "preparing", "ready"])
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ]);
 
   return (
     <AppShell profile={profile} settings={settings}>

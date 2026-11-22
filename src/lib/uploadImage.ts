@@ -9,7 +9,7 @@ export async function compressAndUploadImage(
   file: File,
   folder: string
 ): Promise<string> {
-  const dataUrl = await compressImageToDataUrl(file, 360, 0.7);
+  const dataUrl = await compressImageToDataUrl(file, 320, 0.62);
 
   try {
     const supabase = createClient();
