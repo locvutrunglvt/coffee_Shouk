@@ -7,9 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
 import { compressAndUploadImage } from "@/lib/uploadImage";
+import { runTestSeed15Drinks } from "@/lib/seedTestData";
 import type { UserRole } from "@/lib/rbac";
 import {
   Coffee,
+  Database,
   Edit3,
   ImagePlus,
   Layers,
@@ -114,6 +116,46 @@ export function MenuClient({
   >([]);
   const [quickCatName, setQuickCatName] = useState("");
   const [addingQuickCat, setAddingQuickCat] = useState(false);
+  const [seedingMenu, setSeedingMenu] = useState(false);
+
+  async function handleSeedMissingMenu() {
+    if (!canEdit || seedingMenu) return;
+    setSeedingMenu(true);
+    try {
+      const supabase = createClient();
+      await runTestSeed15Drinks(supabase);
+      const [catRes, prodRes, varRes, topRes, tableRes] = await Promise.all([
+        supabase
+          .from("categories")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("products")
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", { ascending: true }),
+        supabase.from("product_variants").select("*").eq("is_active", true),
+        supabase
+          .from("toppings")
+          .select("*")
+          .eq("is_active", true)
+          .order("name", { ascending: true }),
+        supabase
+          .from("dining_tables")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+      ]);
+      if (catRes.data) setCategories(catRes.data as CategoryRow[]);
+      if (prodRes.data) setProducts(prodRes.data as ProductRow[]);
+      if (varRes.data) setVariants(varRes.data as VariantRow[]);
+      if (topRes.data) setToppings(topRes.data as ToppingRow[]);
+      if (tableRes.data) setTables(tableRes.data as TableRow[]);
+    } finally {
+      setSeedingMenu(false);
+    }
+  }
 
   async function handleQuickCreateCategory() {
     if (!canEdit || !quickCatName.trim() || addingQuickCat) return;
@@ -465,14 +507,29 @@ export function MenuClient({
         </div>
 
         {canEdit && activeTab === "products" && (
-          <button
-            type="button"
-            onClick={openNewProductModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#16A34A] text-white text-sm font-semibold hover:bg-[#15803D] cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t.menu.addProduct}</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {products.length < 15 && (
+              <button
+                type="button"
+                disabled={seedingMenu}
+                onClick={handleSeedMissingMenu}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold cursor-pointer disabled:opacity-60 shadow-xs"
+              >
+                <Database className="w-4 h-4" />
+                <span>
+                  {seedingMenu ? t.common.loading : t.settings.seedTestBtn}
+                </span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={openNewProductModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl btn-3d-green text-sm font-bold cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.menu.addProduct}</span>
+            </button>
+          </div>
         )}
       </div>
 
