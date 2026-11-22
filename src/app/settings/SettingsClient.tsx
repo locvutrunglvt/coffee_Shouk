@@ -11,8 +11,10 @@ import { type UserRole } from "@/lib/rbac";
 import type { ShopSettings, UserProfile } from "@/lib/auth";
 import { useT } from "@/components/I18nProvider";
 import { compressAndUploadImage } from "@/lib/uploadImage";
+import { runTestSeed15Drinks } from "@/lib/seedTestData";
 import {
   CheckCircle2,
+  Database,
   Save,
   Store,
   Users,
@@ -47,6 +49,7 @@ export function SettingsClient({
   const [profiles, setProfiles] = useState(initialProfiles);
   const [savingSettings, setSavingSettings] = useState(false);
   const [uploadingQr, setUploadingQr] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ type: "ok" | "err"; text: string } | null>(
     null
@@ -436,6 +439,46 @@ export function SettingsClient({
           <span>{savingSettings ? t.common.saving : t.settings.saveSettingsBtn}</span>
         </button>
       </form>
+
+      {/* 1-Click Test Data Loader */}
+      <div className="card-3d rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-[#EAFBF0] to-white">
+        <div className="space-y-1 max-w-2xl">
+          <div className="flex items-center gap-2 font-extrabold text-[#14532D]">
+            <Database className="w-5 h-5 text-[#16A34A]" />
+            <h2>{t.settings.seedTestTitle}</h2>
+          </div>
+          <p className="text-xs sm:text-sm text-[#2F6844]">
+            {t.settings.seedTestHint}
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={seeding}
+          onClick={async () => {
+            setSeeding(true);
+            setNotice(null);
+            try {
+              const supabase = createClient();
+              const res = await runTestSeed15Drinks(supabase);
+              setNotice({
+                type: "ok",
+                text:
+                  res === "seeded"
+                    ? t.settings.seedTestDone
+                    : t.settings.seedAlreadyHasData,
+              });
+              router.refresh();
+            } catch {
+              setNotice({ type: "err", text: t.common.error });
+            } finally {
+              setSeeding(false);
+            }
+          }}
+          className="px-4 py-2.5 rounded-xl btn-3d-green text-sm font-bold cursor-pointer disabled:opacity-60 shrink-0"
+        >
+          {seeding ? t.common.loading : t.settings.seedTestBtn}
+        </button>
+      </div>
 
       <div className="card-3d rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">

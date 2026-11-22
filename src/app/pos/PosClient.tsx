@@ -463,20 +463,20 @@ export function PosClient({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredProducts.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 disabled={!p.is_available}
                 onClick={() => openCustomize(p)}
-                className={`text-left bg-white rounded-2xl border overflow-hidden flex flex-col transition-all ${
+                className={`text-left card-3d rounded-2xl overflow-hidden flex flex-col transition-all ${
                   p.is_available
-                    ? "border-[#CDE9D5] hover:border-[#22C55E] hover:shadow-sm cursor-pointer active:scale-[0.99]"
+                    ? "hover:border-[#22C55E] hover:-translate-y-0.5 cursor-pointer active:scale-[0.98]"
                     : "border-red-200 opacity-50 cursor-not-allowed"
                 }`}
               >
-                <div className="relative h-28 w-full bg-[#EAFBF0] flex items-center justify-center overflow-hidden">
+                <div className="relative h-32 w-full bg-[#EAFBF0] flex items-center justify-center overflow-hidden">
                   {p.image_url ? (
                     <Image
                       src={p.image_url}
@@ -485,20 +485,20 @@ export function PosClient({
                       className="object-cover"
                     />
                   ) : (
-                    <Coffee className="w-8 h-8 text-[#16A34A]/60" />
+                    <Coffee className="w-9 h-9 text-[#16A34A]/60" />
                   )}
+                  <span className="absolute top-0 right-0 px-2 py-0.5 rounded-bl-xl bg-gradient-to-b from-[#22C55E] to-[#16A34A] text-white text-xs font-extrabold shadow-sm">
+                    {formatMoney(p.base_price, settings.currency_code)}
+                  </span>
                   {!p.is_available && (
                     <span className="absolute inset-0 bg-black/50 text-white text-xs font-bold flex items-center justify-center">
                       {t.pos.outOfStock}
                     </span>
                   )}
                 </div>
-                <div className="p-2.5 flex-1 flex flex-col justify-between">
-                  <p className="font-semibold text-sm sm:text-base text-[#14532D] line-clamp-2">
+                <div className="p-2.5 flex-1 flex items-center justify-center text-center">
+                  <p className="font-bold text-xs sm:text-sm text-[#14532D] line-clamp-2">
                     {p.name}
-                  </p>
-                  <p className="text-xs font-bold text-[#15803D] mt-1">
-                    {formatMoney(p.base_price, settings.currency_code)}
                   </p>
                 </div>
               </button>
@@ -751,13 +751,13 @@ export function PosClient({
                 </>
               )}
 
-              <div className="space-y-2 pt-1">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 {canCollectCash && (
                   <button
                     type="button"
                     disabled={cart.length === 0 || submitting}
                     onClick={() => submitOrder(true)}
-                    className="w-full py-3 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white font-bold text-sm cursor-pointer disabled:opacity-50"
+                    className="col-span-2 py-3 rounded-xl btn-3d-green font-extrabold text-sm cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? t.common.saving : t.pos.checkoutBtn}
                   </button>
@@ -766,9 +766,17 @@ export function PosClient({
                   type="button"
                   disabled={cart.length === 0 || submitting}
                   onClick={() => submitOrder(false)}
-                  className="w-full py-2.5 rounded-xl border border-[#16A34A] text-[#14532D] hover:bg-[#EAFBF0] font-semibold text-xs cursor-pointer disabled:opacity-50"
+                  className="py-2.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer disabled:opacity-50 shadow-[0_3px_0_0_#B45309]"
                 >
                   {t.pos.sendOnlyBtn}
+                </button>
+                <button
+                  type="button"
+                  disabled={cart.length === 0}
+                  onClick={() => setCart([])}
+                  className="py-2.5 px-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer disabled:opacity-50 shadow-[0_3px_0_0_#9F1239]"
+                >
+                  {t.common.cancel}
                 </button>
               </div>
             </div>

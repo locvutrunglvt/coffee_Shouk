@@ -428,6 +428,11 @@ export const en: Dictionary = {
     scanQrFromImage: "Extract from QR image",
     qrDecodedOk: "QR string extracted! Click Save settings.",
     qrDecodeFail: "Could not read QR code from this image. Try a clearer crop.",
+    seedTestTitle: "Quick Test Data Loader (15 Drinks + Stock + Utilities)",
+    seedTestHint: "One click to load 15 drinks with photos, sizes, toppings, 6 tables, 7 ingredients with recipes, and sample expenses.",
+    seedTestBtn: "Load 15 Test Drinks Now",
+    seedTestDone: "Loaded 15 drinks with photos, tables, ingredients, recipes and sample expenses!",
+    seedAlreadyHasData: "Menu already has items; skipped loading test data.",
   },
   orderPublic: {
     welcome: "Self-Order Menu",

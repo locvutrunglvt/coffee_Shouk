@@ -426,6 +426,11 @@ export const vi = {
     scanQrFromImage: "Tách chuỗi từ ảnh QR",
     qrDecodedOk: "Đã đọc được chuỗi QR gốc! Hãy bấm Lưu cài đặt.",
     qrDecodeFail: "Không đọc được mã QR từ ảnh này. Thử ảnh nét hơn hoặc dán chuỗi trực tiếp.",
+    seedTestTitle: "Dữ liệu mẫu để test nhanh (15 món + Kho + Điện/Nước)",
+    seedTestHint: "Bấm 1 nút để nạp sẵn 15 đồ uống kèm ảnh minh họa, Size, Topping, 6 bàn, 7 nguyên liệu định lượng và chi phí mẫu.",
+    seedTestBtn: "Nạp dữ liệu test 15 món ngay",
+    seedTestDone: "Đã nạp xong 15 món kèm ảnh, bàn, nguyên liệu, công thức và chi phí mẫu!",
+    seedAlreadyHasData: "Quán đã có món trong thực đơn rồi, không nạp đè nữa.",
   },
   orderPublic: {
     welcome: "Thực đơn gọi món",
