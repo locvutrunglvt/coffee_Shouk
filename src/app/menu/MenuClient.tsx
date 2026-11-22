@@ -6,6 +6,11 @@ import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
+import {
+  localizeDescription,
+  localizeName,
+  translateText,
+} from "@/lib/i18n/catalogTranslator";
 import { compressAndUploadImage } from "@/lib/uploadImage";
 import { runTestSeed15Drinks } from "@/lib/seedTestData";
 import type { UserRole } from "@/lib/rbac";
@@ -25,6 +30,8 @@ import {
 export interface CategoryRow {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_lo?: string | null;
   sort_order: number;
   is_active: boolean;
 }
@@ -42,7 +49,11 @@ export interface ProductRow {
   id: string;
   category_id: string | null;
   name: string;
+  name_en?: string | null;
+  name_lo?: string | null;
   description: string;
+  description_en?: string | null;
+  description_lo?: string | null;
   image_url: string;
   base_price: number;
   is_available: boolean;
@@ -52,6 +63,8 @@ export interface ProductRow {
 export interface ToppingRow {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_lo?: string | null;
   price: number;
   is_available: boolean;
   is_active: boolean;
@@ -60,6 +73,8 @@ export interface ToppingRow {
 export interface TableRow {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_lo?: string | null;
   zone: string;
   sort_order: number;
   is_active: boolean;
@@ -84,7 +99,7 @@ export function MenuClient({
   initialToppings,
   initialTables,
 }: MenuClientProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const canEdit = userRole === "admin" || userRole === "manager";
 
   const [activeTab, setActiveTab] = useState<
@@ -476,7 +491,9 @@ export function MenuClient({
       ? products
       : products.filter((p) => p.category_id === selectedCat);
 
-  const catMap = new Map(categories.map((c) => [c.id, c.name]));
+  const catMap = new Map(
+    categories.map((c) => [c.id, localizeName(c, locale)])
+  );
 
   return (
     <div className="space-y-5">
@@ -559,7 +576,7 @@ export function MenuClient({
                     : "bg-white text-[#1E4D31] border-[#CDE9D5]"
                 }`}
               >
-                {cat.name}
+                {localizeName(cat, locale)}
               </button>
             ))}
           </div>
@@ -615,11 +632,16 @@ export function MenuClient({
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div>
                         <h3 className="font-bold text-base text-[#14532D] line-clamp-1">
-                          {p.name}
+                          {localizeName(p, locale)}
                         </h3>
                         {p.description && (
                           <p className="text-xs text-[#2F6844] mt-0.5 line-clamp-2">
-                            {p.description}
+                            {localizeDescription(
+                              p.description,
+                              p.description_en,
+                              p.description_lo,
+                              locale
+                            )}
                           </p>
                         )}
                       </div>
@@ -713,7 +735,9 @@ export function MenuClient({
                 className="flex items-center justify-between py-2 border-b border-[#DDF3E4] last:border-0 text-sm"
               >
                 <div>
-                  <span className="font-semibold text-[#14532D]">{c.name}</span>
+                  <span className="font-semibold text-[#14532D]">
+                    {localizeName(c, locale)}
+                  </span>
                   <span className="ml-2 text-xs text-[#2F6844]">#{c.sort_order}</span>
                 </div>
                 {canEdit && (
@@ -774,7 +798,9 @@ export function MenuClient({
                 className="flex items-center justify-between py-2 border-b border-[#DDF3E4] last:border-0 text-sm"
               >
                 <div>
-                  <span className="font-semibold text-[#14532D]">{top.name}</span>
+                  <span className="font-semibold text-[#14532D]">
+                    {localizeName(top, locale)}
+                  </span>
                   <span className="ml-2 text-xs text-[#15803D] font-semibold">
                     +{formatMoney(top.price, currencyCode)}
                   </span>
@@ -848,8 +874,12 @@ export function MenuClient({
                 className="p-3 rounded-xl border border-[#CDE9D5] bg-[#F2FBF4] flex items-center justify-between gap-2"
               >
                 <div>
-                  <p className="font-bold text-sm text-[#14532D]">{tb.name}</p>
-                  <p className="text-xs text-[#2F6844]">{tb.zone}</p>
+                  <p className="font-bold text-sm text-[#14532D]">
+                    {localizeName(tb, locale)}
+                  </p>
+                  <p className="text-xs text-[#2F6844]">
+                    {translateText(tb.zone, locale)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -891,7 +921,8 @@ export function MenuClient({
                   </button>
                 </div>
                 <p className="text-sm font-bold text-[#15803D]">
-                  {qrTableModal.table.name} ({qrTableModal.table.zone})
+                  {localizeName(qrTableModal.table, locale)} (
+                  {translateText(qrTableModal.table.zone, locale)})
                 </p>
                 <Image
                   src={qrTableModal.dataUrl}

@@ -5,6 +5,11 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
+import {
+  localizeDescription,
+  localizeName,
+  translateText,
+} from "@/lib/i18n/catalogTranslator";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { PaymentQrCard } from "@/components/PaymentQrCard";
 import type { ShopSettings } from "@/lib/auth";
@@ -60,7 +65,7 @@ export function OrderPublicClient({
   tables,
   initialTableId,
 }: OrderPublicClientProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedCat, setSelectedCat] = useState("all");
   const [search, setSearch] = useState("");
@@ -203,9 +208,11 @@ export function OrderPublicClient({
   const currentTable = tables.find((tb) => tb.id === tableId);
   const filteredProducts = products.filter((p) => {
     const matchCat = selectedCat === "all" || p.category_id === selectedCat;
+    const q = search.trim().toLowerCase();
     const matchSearch =
-      !search.trim() ||
-      p.name.toLowerCase().includes(search.trim().toLowerCase());
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      localizeName(p, locale).toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
 
@@ -233,7 +240,10 @@ export function OrderPublicClient({
               </p>
               <p className="text-xs font-bold text-[#15803D] truncate">
                 {serviceType === "dine_in" && currentTable
-                  ? `${t.orderPublic.tableBadge}: ${currentTable.name}`
+                  ? `${t.orderPublic.tableBadge}: ${localizeName(
+                      currentTable,
+                      locale
+                    )}`
                   : t.orderPublic.welcome}
               </p>
             </div>
@@ -357,7 +367,7 @@ export function OrderPublicClient({
                         : "bg-[#F2FBF4] text-[#14532D] border-[#CDE9D5]"
                     }`}
                   >
-                    {c.name}
+                    {localizeName(c, locale)}
                   </button>
                 ))}
               </div>
@@ -397,11 +407,16 @@ export function OrderPublicClient({
                     </div>
                     <div className="min-w-0">
                       <p className="font-extrabold text-sm sm:text-base text-[#14532D] truncate">
-                        {p.name}
+                        {localizeName(p, locale)}
                       </p>
                       {p.description && (
                         <p className="text-xs text-[#2F6844] line-clamp-1">
-                          {p.description}
+                          {localizeDescription(
+                            p.description,
+                            p.description_en,
+                            p.description_lo,
+                            locale
+                          )}
                         </p>
                       )}
                       <p className="text-sm font-extrabold text-[#15803D] mt-0.5">
@@ -481,7 +496,7 @@ export function OrderPublicClient({
                   <option value="">{t.pos.selectTable}</option>
                   {tables.map((tb) => (
                     <option key={tb.id} value={tb.id}>
-                      {tb.name} ({tb.zone})
+                      {localizeName(tb, locale)} ({translateText(tb.zone, locale)})
                     </option>
                   ))}
                 </select>
@@ -605,12 +620,15 @@ export function OrderPublicClient({
                     >
                       <div>
                         <p className="font-bold text-sm text-[#14532D]">
-                          {item.quantity}x {item.productName}
+                          {item.quantity}x {translateText(item.productName, locale)}
                           {item.variantName ? ` (${item.variantName})` : ""}
                         </p>
                         {item.toppings.length > 0 && (
                           <p className="text-xs text-[#2F6844]">
-                            + {item.toppings.map((tp) => tp.name).join(", ")}
+                            +{" "}
+                            {item.toppings
+                              .map((tp) => translateText(tp.name, locale))
+                              .join(", ")}
                           </p>
                         )}
                         {item.note && (
@@ -715,7 +733,7 @@ export function OrderPublicClient({
                 )}
                 <div>
                   <h3 className="font-extrabold text-base text-[#14532D]">
-                    {activeProduct.name}
+                    {localizeName(activeProduct, locale)}
                   </h3>
                   <p className="text-sm text-[#15803D] font-bold">
                     {formatMoney(activeProduct.base_price, settings.currency_code)}
@@ -822,7 +840,7 @@ export function OrderPublicClient({
                               : "bg-white border-[#CDE9D5] text-[#1E4D31]"
                           }`}
                         >
-                          <span>{tp.name}</span>
+                          <span>{localizeName(tp, locale)}</span>
                           <span className="text-xs font-bold text-[#15803D]">
                             +{formatMoney(tp.price, settings.currency_code)}
                           </span>

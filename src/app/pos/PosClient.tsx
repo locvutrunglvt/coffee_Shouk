@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateTimeVN, formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
+import { localizeName, translateText } from "@/lib/i18n/catalogTranslator";
 import { PaymentQrCard } from "@/components/PaymentQrCard";
 import {
   deductStockAndSyncShift,
@@ -84,7 +85,7 @@ export function PosClient({
   openShiftId,
   initialRecentOrders,
 }: PosClientProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const canCollectCash = profile.role !== "staff";
   const canCancel = profile.role === "admin" || profile.role === "manager";
 
@@ -403,9 +404,11 @@ export function PosClient({
 
   const filteredProducts = products.filter((p) => {
     const matchCat = selectedCat === "all" || p.category_id === selectedCat;
+    const q = search.trim().toLowerCase();
     const matchSearch =
-      !search.trim() ||
-      p.name.toLowerCase().includes(search.trim().toLowerCase());
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      localizeName(p, locale).toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
 
@@ -474,7 +477,7 @@ export function PosClient({
                       : "bg-[#F2FBF4] text-[#1E4D31] border-[#CDE9D5]"
                   }`}
                 >
-                  {c.name}
+                  {localizeName(c, locale)}
                 </button>
               ))}
             </div>
@@ -504,7 +507,7 @@ export function PosClient({
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-[#14532D] truncate">
-                      {p.name}
+                      {localizeName(p, locale)}
                     </p>
                     <p className="text-xs font-extrabold text-[#15803D] mt-0.5">
                       {formatMoney(p.base_price, settings.currency_code)}
@@ -564,7 +567,7 @@ export function PosClient({
                 </div>
                 <div className="p-2.5 flex-1 flex items-center justify-center text-center">
                   <p className="font-bold text-xs sm:text-sm text-[#14532D] line-clamp-2">
-                    {p.name}
+                    {localizeName(p, locale)}
                   </p>
                 </div>
               </button>
@@ -626,7 +629,7 @@ export function PosClient({
                 <option value="">{t.pos.selectTable}</option>
                 {tables.map((tb) => (
                   <option key={tb.id} value={tb.id}>
-                    {tb.name} ({tb.zone})
+                    {localizeName(tb, locale)} ({translateText(tb.zone, locale)})
                   </option>
                 ))}
               </select>
@@ -650,12 +653,15 @@ export function PosClient({
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-[#14532D]">
-                            {item.productName}
+                            {translateText(item.productName, locale)}
                             {item.variantName ? ` (${item.variantName})` : ""}
                           </p>
                           {item.toppings.length > 0 && (
                             <p className="text-[11px] text-[#2F6844]">
-                              + {item.toppings.map((tp) => tp.name).join(", ")}
+                              +{" "}
+                              {item.toppings
+                                .map((tp) => translateText(tp.name, locale))
+                                .join(", ")}
                             </p>
                           )}
                           {item.note && (
@@ -875,7 +881,9 @@ export function PosClient({
                     </td>
                     <td className="py-2.5 pr-3">
                       {o.order_type === "dine_in"
-                        ? o.dining_tables?.name ?? t.pos.dineIn
+                        ? o.dining_tables?.name
+                          ? translateText(o.dining_tables.name, locale)
+                          : t.pos.dineIn
                         : o.order_type === "take_away"
                         ? t.pos.takeAway
                         : t.pos.delivery}
@@ -958,7 +966,7 @@ export function PosClient({
                 )}
                 <div>
                   <h3 className="font-bold text-base text-[#14532D]">
-                    {activeProduct.name}
+                    {localizeName(activeProduct, locale)}
                   </h3>
                   <p className="text-xs text-[#15803D] font-semibold">
                     {formatMoney(activeProduct.base_price, settings.currency_code)}
@@ -1065,7 +1073,7 @@ export function PosClient({
                               : "bg-white border-[#CDE9D5] text-[#1E4D31]"
                           }`}
                         >
-                          <p>{tp.name}</p>
+                          <p>{localizeName(tp, locale)}</p>
                           <p className="text-[11px] text-[#15803D]">
                             +{formatMoney(tp.price, settings.currency_code)}
                           </p>

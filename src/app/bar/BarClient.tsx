@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/components/I18nProvider";
+import { translateText } from "@/lib/i18n/catalogTranslator";
 import { CheckCircle2, Clock, Coffee, RefreshCw } from "lucide-react";
 
 export interface BarOrderItem {
@@ -30,7 +31,7 @@ interface BarClientProps {
 }
 
 export function BarClient({ initialOrders }: BarClientProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [orders, setOrders] = useState<BarOrder[]>(initialOrders);
   const [tab, setTab] = useState<"pending" | "preparing" | "ready">("pending");
   const [loading, setLoading] = useState(false);
@@ -119,7 +120,9 @@ export function BarClient({ initialOrders }: BarClientProps) {
 
   function orderTypeLabel(o: BarOrder) {
     if (o.order_type === "dine_in") {
-      return o.dining_tables?.name ?? t.pos.dineIn;
+      return o.dining_tables?.name
+        ? translateText(o.dining_tables.name, locale)
+        : t.pos.dineIn;
     }
     if (o.order_type === "take_away") return t.pos.takeAway;
     return t.pos.delivery;
@@ -218,14 +221,17 @@ export function BarClient({ initialOrders }: BarClientProps) {
                     >
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="font-bold text-sm text-[#14532D]">
-                          {item.quantity}x {item.product_name}
+                          {item.quantity}x {translateText(item.product_name, locale)}
                           {item.variant_name ? ` (${item.variant_name})` : ""}
                         </span>
                       </div>
                       {Array.isArray(item.toppings_json) &&
                         item.toppings_json.length > 0 && (
                           <p className="text-xs text-[#2F6844] mt-0.5">
-                            + {item.toppings_json.map((tp) => tp.name).join(", ")}
+                            +{" "}
+                            {item.toppings_json
+                              .map((tp) => translateText(tp.name, locale))
+                              .join(", ")}
                           </p>
                         )}
                       {item.note && (
