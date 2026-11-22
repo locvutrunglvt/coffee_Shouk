@@ -181,3 +181,16 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.submit_qr_order(UUID, TEXT, JSONB) TO anon, authenticated;
+
+-- 4. Public Storage Bucket for fast drink/QR/receipt photos (replaces heavy base64 in DB)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('taoi-images', 'taoi-images', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "taoi_images_public_read" ON storage.objects;
+CREATE POLICY "taoi_images_public_read" ON storage.objects
+  FOR SELECT TO public USING (bucket_id = 'taoi-images');
+
+DROP POLICY IF EXISTS "taoi_images_auth_upload" ON storage.objects;
+CREATE POLICY "taoi_images_auth_upload" ON storage.objects
+  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'taoi-images');

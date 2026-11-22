@@ -150,7 +150,7 @@ export const lo: Dictionary = {
     outOfStock: "ໝົດຊົ່ວຄາວ",
     cartTitle: "ລາຍການອໍເດີ",
     emptyCart: "ຍັງບໍ່ມີລາຍການ. ແຕະໃສ່ເມນູເພື່ອເພີ່ມ.",
-    sizeLabel: "ເລືອກ Size",
+    sizeLabel: "ເລືອກຈຳນວນຕາມແຕ່ລະ Size",
     toppingsLabel: "Topping ເພີ່ມ",
     itemNotePlaceholder: "ໝາຍເຫດ (ເຊັ່ນ: ນ້ຳກ້ອນໜ້ອຍ, ຫວານ 50%)",
     addToCartBtn: "ເພີ່ມໃສ່ອໍເດີ",
@@ -262,6 +262,8 @@ export const lo: Dictionary = {
     printTableQr: "QR ໂຕະ",
     tableQrTitle: "QR Code ສັ່ງອໍເດີຢູ່ໂຕະ",
     tableQrDesc: "ລູກຄ້າສະແກນ QR ນີ້ດ້ວຍມືຖືເພື່ອເບິ່ງເມນູ ແລະ ສັ່ງເຄື່ອງດື່ມໄດ້ທັນທີ.",
+    quickNewCategory: "ສ້າງໝວດໝູ່ດ່ວນ",
+    newCategoryPlaceholder: "ເຊັ່ນ: ກາເຟ, ຊານົມ...",
   },
   inventory: {
     title: "ນຳເຂົ້າສາງ, ຍອດຄົງເຫຼືອ ແລະ ສູດຊົງ",

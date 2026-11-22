@@ -1,15 +1,19 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
-export async function proxy(request: NextRequest) {
+/**
+ * Lightweight 0ms proxy: performs optimistic auth cookie checks only so
+ * loading.tsx streams immediately without blocking on a network round-trip.
+ * Full JWT verification and RBAC run in requireRouteAccess() on the server.
+ */
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/locale") || pathname.startsWith("/order")) {
     return NextResponse.next();
   }
 
-  const { url, anonKey, isConfigured } = getSupabaseEnv();
+  const { isConfigured } = getSupabaseEnv();
 
   if (!isConfigured) {
     if (pathname !== "/login") {
@@ -18,40 +22,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
 
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        );
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
+  const isAuthRoute =
+    pathname.startsWith("/login") || pathname.startsWith("/auth");
 
-  // getClaims() validates JWT locally when asymmetric keys are enabled (much faster than getUser())
-  const { data } = await supabase.auth.getClaims();
-  const isAuthenticated = Boolean(data?.claims?.sub);
-
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/auth");
-
-  if (!isAuthenticated && !isAuthRoute) {
+  if (!hasAuthCookie && !isAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (isAuthenticated && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {

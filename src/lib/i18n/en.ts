@@ -151,7 +151,7 @@ export const en: Dictionary = {
     outOfStock: "Sold out",
     cartTitle: "Current order",
     emptyCart: "No items yet. Tap any drink to add.",
-    sizeLabel: "Size",
+    sizeLabel: "Select quantity per Size",
     toppingsLabel: "Add toppings",
     itemNotePlaceholder: "Item note (e.g. less ice, 50% sugar)",
     addToCartBtn: "Add to order",
@@ -263,6 +263,8 @@ export const en: Dictionary = {
     printTableQr: "Table QR",
     tableQrTitle: "Table Self-Order QR Code",
     tableQrDesc: "Customers scan this QR code with their phone to view photos and order directly.",
+    quickNewCategory: "Quick add category",
+    newCategoryPlaceholder: "e.g. Coffee, Milk Tea...",
   },
   inventory: {
     title: "Inventory, Stock Import & Recipes",

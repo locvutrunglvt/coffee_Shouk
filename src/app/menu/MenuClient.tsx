@@ -112,6 +112,32 @@ export function MenuClient({
   const [draftSizes, setDraftSizes] = useState<
     { id?: string; name: string; price: string }[]
   >([]);
+  const [quickCatName, setQuickCatName] = useState("");
+  const [addingQuickCat, setAddingQuickCat] = useState(false);
+
+  async function handleQuickCreateCategory() {
+    if (!canEdit || !quickCatName.trim() || addingQuickCat) return;
+    setAddingQuickCat(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({
+          name: quickCatName.trim(),
+          sort_order: categories.length + 1,
+        })
+        .select()
+        .single();
+      if (!error && data) {
+        const created = data as CategoryRow;
+        setCategories((prev) => [...prev, created]);
+        setProdCatId(created.id);
+        setQuickCatName("");
+      }
+    } finally {
+      setAddingQuickCat(false);
+    }
+  }
 
   // Simple forms for Category / Topping / Table
   const [newCatName, setNewCatName] = useState("");
@@ -921,6 +947,25 @@ export function MenuClient({
                     </option>
                   ))}
                 </select>
+                {canEdit && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <input
+                      type="text"
+                      value={quickCatName}
+                      onChange={(e) => setQuickCatName(e.target.value)}
+                      placeholder={t.menu.quickNewCategory}
+                      className="flex-1 px-2.5 py-1 text-xs rounded-lg border border-[#CDE9D5] bg-[#F2FBF4]"
+                    />
+                    <button
+                      type="button"
+                      disabled={!quickCatName.trim() || addingQuickCat}
+                      onClick={handleQuickCreateCategory}
+                      className="px-2.5 py-1 rounded-lg bg-[#16A34A] text-white text-xs font-bold cursor-pointer disabled:opacity-50 shrink-0"
+                    >
+                      + {t.common.add}
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-base font-extrabold text-[#14532D] mb-1">

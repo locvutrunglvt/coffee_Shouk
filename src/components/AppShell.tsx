@@ -123,6 +123,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 onClick={() => handleNavClick(item.href)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[15px] font-bold transition-all ${
                   active
@@ -236,6 +237,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     onClick={() => handleNavClick(item.href)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-base font-bold ${
                       active
@@ -282,6 +284,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               onClick={() => handleNavClick(item.href)}
               className={`flex flex-col items-center justify-center px-2 py-1 rounded-xl min-w-[62px] ${
                 active ? "text-[#15803D] font-extrabold" : "text-[#3B6B4C] font-semibold"

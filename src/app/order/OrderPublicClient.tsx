@@ -84,7 +84,7 @@ export function OrderPublicClient({
 
   // Customize drink modal
   const [activeProduct, setActiveProduct] = useState<ProductRow | null>(null);
-  const [pickedVariantId, setPickedVariantId] = useState<string | null>(null);
+  const [variantQtys, setVariantQtys] = useState<Record<string, number>>({});
   const [pickedToppings, setPickedToppings] = useState<
     { id: string; name: string; price: number }[]
   >([]);
@@ -95,7 +95,7 @@ export function OrderPublicClient({
     if (!p.is_available) return;
     const pVars = variants.filter((v) => v.product_id === p.id && v.is_active);
     setActiveProduct(p);
-    setPickedVariantId(pVars[0]?.id ?? null);
+    setVariantQtys(pVars[0] ? { [pVars[0].id]: 1 } : {});
     setPickedToppings([]);
     setPickedQty(1);
     setPickedNote("");
@@ -106,24 +106,41 @@ export function OrderPublicClient({
     const pVars = variants.filter(
       (v) => v.product_id === activeProduct.id && v.is_active
     );
-    const chosenVar = pVars.find((v) => v.id === pickedVariantId);
-    const unitPrice = chosenVar
-      ? Number(chosenVar.price)
-      : Number(activeProduct.base_price);
 
-    setCart((prev) => [
-      ...prev,
-      {
-        productId: activeProduct.id,
-        variantId: chosenVar?.id ?? null,
-        productName: activeProduct.name,
-        variantName: chosenVar?.name ?? "",
-        quantity: pickedQty,
-        unitPrice,
-        toppings: pickedToppings,
-        note: pickedNote.trim(),
-      },
-    ]);
+    if (pVars.length > 0) {
+      const toAdd: PublicCartItem[] = [];
+      for (const v of pVars) {
+        const qty = variantQtys[v.id] ?? 0;
+        if (qty > 0) {
+          toAdd.push({
+            productId: activeProduct.id,
+            variantId: v.id,
+            productName: activeProduct.name,
+            variantName: v.name,
+            quantity: qty,
+            unitPrice: Number(v.price),
+            toppings: pickedToppings,
+            note: pickedNote.trim(),
+          });
+        }
+      }
+      if (toAdd.length === 0) return;
+      setCart((prev) => [...prev, ...toAdd]);
+    } else {
+      setCart((prev) => [
+        ...prev,
+        {
+          productId: activeProduct.id,
+          variantId: null,
+          productName: activeProduct.name,
+          variantName: "",
+          quantity: pickedQty,
+          unitPrice: Number(activeProduct.base_price),
+          toppings: pickedToppings,
+          note: pickedNote.trim(),
+        },
+      ]);
+    }
     setActiveProduct(null);
   }
 
@@ -715,25 +732,60 @@ export function OrderPublicClient({
             </div>
 
             {activeProdVars.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <p className="text-sm font-bold text-[#14532D]">
                   {t.pos.sizeLabel}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {activeProdVars.map((v) => (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => setPickedVariantId(v.id)}
-                      className={`px-3.5 py-2 rounded-xl border text-sm font-bold cursor-pointer ${
-                        pickedVariantId === v.id
-                          ? "bg-[#16A34A] text-white border-[#16A34A]"
-                          : "bg-white text-[#14532D] border-[#CDE9D5]"
-                      }`}
-                    >
-                      {v.name} — {formatMoney(v.price, settings.currency_code)}
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  {activeProdVars.map((v) => {
+                    const q = variantQtys[v.id] ?? 0;
+                    return (
+                      <div
+                        key={v.id}
+                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
+                          q > 0
+                            ? "bg-[#EAFBF0] border-[#16A34A]"
+                            : "bg-white border-[#CDE9D5]"
+                        }`}
+                      >
+                        <div className="text-sm font-bold text-[#14532D]">
+                          <span>{v.name}</span>
+                          <span className="ml-2 text-[#15803D]">
+                            {formatMoney(v.price, settings.currency_code)}
+                          </span>
+                        </div>
+                        <div className="inline-flex items-center gap-2 bg-white border border-[#CDE9D5] rounded-xl px-2 py-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setVariantQtys((prev) => ({
+                                ...prev,
+                                [v.id]: Math.max(0, (prev[v.id] ?? 0) - 1),
+                              }))
+                            }
+                            className="p-1 cursor-pointer"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="font-extrabold text-sm w-5 text-center">
+                            {q}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setVariantQtys((prev) => ({
+                                ...prev,
+                                [v.id]: (prev[v.id] ?? 0) + 1,
+                              }))
+                            }
+                            className="p-1 cursor-pointer text-[#16A34A]"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -790,31 +842,42 @@ export function OrderPublicClient({
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
-              <div className="inline-flex items-center gap-3 border border-[#CDE9D5] rounded-xl px-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => setPickedQty((q) => Math.max(1, q - 1))}
-                  className="cursor-pointer"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="font-extrabold text-base w-5 text-center">
-                  {pickedQty}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPickedQty((q) => q + 1)}
-                  className="cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              {activeProdVars.length === 0 && (
+                <div className="inline-flex items-center gap-3 border border-[#CDE9D5] rounded-xl px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => setPickedQty((q) => Math.max(1, q - 1))}
+                    className="cursor-pointer"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="font-extrabold text-base w-5 text-center">
+                    {pickedQty}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPickedQty((q) => q + 1)}
+                    className="cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
               <button
                 type="button"
+                disabled={
+                  activeProdVars.length > 0 &&
+                  activeProdVars.every((v) => (variantQtys[v.id] ?? 0) === 0)
+                }
                 onClick={addCustomizedToCart}
-                className="flex-1 py-3 rounded-xl btn-3d-green text-sm font-extrabold cursor-pointer"
+                className="flex-1 py-3 rounded-xl btn-3d-green text-sm font-extrabold cursor-pointer disabled:opacity-50"
               >
                 {t.pos.addToCartBtn}
+                {activeProdVars.length > 0 &&
+                  ` (${activeProdVars.reduce(
+                    (s, v) => s + (variantQtys[v.id] ?? 0),
+                    0
+                  )})`}
               </button>
             </div>
           </div>

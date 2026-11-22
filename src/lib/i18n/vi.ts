@@ -149,7 +149,7 @@ export const vi = {
     outOfStock: "Hết món",
     cartTitle: "Đơn hiện tại",
     emptyCart: "Chưa chọn món nào. Chạm vào món để thêm.",
-    sizeLabel: "Chọn Size",
+    sizeLabel: "Chọn số lượng theo từng Size",
     toppingsLabel: "Topping thêm",
     itemNotePlaceholder: "Ghi chú món (VD: ít đá, 50% đường)",
     addToCartBtn: "Thêm vào đơn",
@@ -261,6 +261,8 @@ export const vi = {
     printTableQr: "Xem / In QR bàn",
     tableQrTitle: "Mã QR đặt món tại bàn",
     tableQrDesc: "Khách quét mã này bằng điện thoại để xem thực đơn và gọi món trực tiếp.",
+    quickNewCategory: "Tạo nhanh danh mục mới",
+    newCategoryPlaceholder: "VD: Cà phê, Trà sữa...",
   },
   inventory: {
     title: "Nhập kho, Tồn kho & Định lượng",

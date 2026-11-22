@@ -40,7 +40,12 @@ export const getAuthContext = cache(async () => {
     return { isConfigured: false as const, profile: null, settings: null };
   }
 
-  const { data: claimsData } = await supabase.auth.getClaims();
+  // Run getClaims() + shop_settings in parallel to cut server latency
+  const [{ data: claimsData }, settingsRes] = await Promise.all([
+    supabase.auth.getClaims(),
+    supabase.from("shop_settings").select("*").eq("id", 1).single(),
+  ]);
+
   const userId = claimsData?.claims?.sub as string | undefined;
   const claimsEmail = (claimsData?.claims?.email as string | undefined) ?? "";
 
@@ -48,18 +53,11 @@ export const getAuthContext = cache(async () => {
     return { isConfigured: true as const, profile: null, settings: null };
   }
 
-  const [{ data: profile }, { data: settings }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, full_name, email, phone, role, is_active")
-      .eq("id", userId)
-      .single(),
-    supabase
-      .from("shop_settings")
-      .select("*")
-      .eq("id", 1)
-      .single(),
-  ]);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone, role, is_active")
+    .eq("id", userId)
+    .single();
 
   return {
     isConfigured: true as const,
@@ -71,7 +69,7 @@ export const getAuthContext = cache(async () => {
       role: "staff" as UserRole,
       is_active: true,
     },
-    settings: (settings as ShopSettings | null) ?? {
+    settings: (settingsRes.data as ShopSettings | null) ?? {
       id: 1,
       shop_name: "Tà Ơi Coffee",
       address: "",
