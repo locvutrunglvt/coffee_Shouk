@@ -1210,10 +1210,16 @@ const RULES: AiRule[] = [
     id: "expenses_pnl",
     keywords: [
       "chi phi",
-      "dien",
-      "nuoc",
+      "tien dien",
+      "tien nuoc",
+      "hoa don dien",
+      "hoa don nuoc",
+      "chi so dien",
+      "chi so nuoc",
+      "cong to",
       "mat bang",
-      "thue",
+      "tien thue",
+      "thue mat bang",
       "lai lo",
       "loi nhuan",
       "p&l",
@@ -1222,12 +1228,16 @@ const RULES: AiRule[] = [
       "hoa von",
       "dinh ky",
       "expense",
+      "expenses",
       "electric",
-      "water",
+      "electricity",
+      "water bill",
+      "water meter",
       "rent",
       "profit",
       "loss",
-      "report",
+      "monthly p&l",
+      "reports",
       "break even",
       "ຄ່າໃຊ້ຈ່າຍ",
       "ຄ່າໄຟ",
@@ -1501,7 +1511,8 @@ function getAllSearchTerms(item: {
 function tryAnswerCatalogOrStockQuery(
   normQ: string,
   ctx: TaOiLiveContext | null,
-  locale: Locale
+  locale: Locale,
+  allowNotFoundFallback = false
 ): string | null {
   if (!ctx) return null;
   const cur = ctx.currencyCode || "LAK";
@@ -1665,6 +1676,39 @@ function tryAnswerCatalogOrStockQuery(
     }
   }
 
+  // Fallback token match (e.g. "nước ổi" -> matches "nước ép ổi" / "trà ổi" via token "oi")
+  if (matchedProductsMap.size === 0 && meaningfulQuery.length >= 2) {
+    const genericDrinkTokens = new Set([
+      "nuoc",
+      "ep",
+      "tra",
+      "sua",
+      "da",
+      "nong",
+      "banh",
+      "sinh",
+      "to",
+      "juice",
+      "tea",
+      "iced",
+      "hot",
+      "coffee",
+    ]);
+    const distinctiveTokens = meaningfulQuery
+      .split(/\s+/)
+      .filter((tok) => tok.length >= 2 && !genericDrinkTokens.has(tok));
+    for (const prod of ctx.catalogProducts) {
+      const terms = getAllSearchTerms(prod);
+      if (
+        distinctiveTokens.some((tok) =>
+          terms.some((pt) => pt.split(/\s+/).includes(tok))
+        )
+      ) {
+        matchedProductsMap.set(prod.id, prod);
+      }
+    }
+  }
+
   if (matchedProductsMap.size > 0) {
     const list = Array.from(matchedProductsMap.values());
     const headingName =
@@ -1788,7 +1832,62 @@ function tryAnswerCatalogOrStockQuery(
     );
   }
 
+  // 5. Honest "Not found in current menu" reply for unknown drink / ingredient queries
+  if (!allowNotFoundFallback) {
+    return null;
+  }
+  const drinkIntentHints = [
+    "nuoc",
+    "tra",
+    "ca phe",
+    "banh",
+    "sinh to",
+    "latte",
+    "matcha",
+    "juice",
+    "coffee",
+    "tea",
+    "smoothie",
+    "ນ້ຳ",
+    "ຊາ",
+    "ກາເຟ",
+  ];
+  const looksLikeItemQuery =
+    drinkIntentHints.some((h) => normQ.includes(normalizeAiText(h))) ||
+    (meaningfulQuery.length >= 2 && meaningfulQuery.split(/\s+/).length <= 3);
+
+  if (looksLikeItemQuery) {
+    if (locale === "lo") {
+      return (
+        `🔍 ບໍ່ພົບເມນູ ຫຼື ວັດຖຸດິບທີ່ກົງກັບ "${meaningfulQuery || normQ}" ໃນລະບົບ (${ctx.activeMenuCount} ເມນູກຳລັງຂາຍ).\n` +
+        `👉 ທ່ານສາມາດເຂົ້າ 'ເມນູ' (/menu) ເພື່ອກວດສອບ ຫຼື ເພີ່ມເມນູໃໝ່, ຫຼື ພິມ "ເມນູມີຫຍັງແດ່" ເພື່ອເບິ່ງໝວດໝູ່ທັງໝົດ.`
+      );
+    }
+    if (locale === "en") {
+      return (
+        `🔍 No menu item or ingredient matching "${meaningfulQuery || normQ}" was found (${ctx.activeMenuCount} active drinks).\n` +
+        `👉 Check or add it in Menu (/menu), or ask "drinks list" to see all categories.`
+      );
+    }
+    return (
+      `🔍 Hiện không tìm thấy món hay nguyên liệu "${meaningfulQuery || normQ}" trong thực đơn quán (${ctx.activeMenuCount} món đang mở).\n` +
+      `👉 Bạn có thể vào Thực đơn (/menu) để thêm món này, hoặc hỏi "menu có mấy món" để xem toàn bộ danh mục hiện có.`
+    );
+  }
+
   return null;
+}
+
+function matchesKeyword(normQ: string, rawKw: string): boolean {
+  const kw = normalizeAiText(rawKw);
+  if (!kw) return false;
+  // Lao script has no spaces between words
+  if (/[\u0e80-\u0eff]/.test(kw)) {
+    return normQ.includes(kw);
+  }
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(^|\\s)${escaped}($|\\s)`);
+  return re.test(normQ);
 }
 
 export function answerTaOiQuestion(
@@ -1806,7 +1905,7 @@ export function answerTaOiQuestion(
     let score = 0;
     for (const rawKw of rule.keywords) {
       const kw = normalizeAiText(rawKw);
-      if (kw && normQ.includes(kw)) {
+      if (kw && matchesKeyword(normQ, rawKw)) {
         score += kw.includes(" ") ? 2 : 1;
       }
     }
@@ -1820,7 +1919,12 @@ export function answerTaOiQuestion(
   // Prefer live catalog/ingredient search when question specifically targets a category, drink, topping, or stock count
   // and didn't strongly hit an operational/workflow rule.
   if (!bestRule || bestScore <= 1) {
-    const catalogAnswer = tryAnswerCatalogOrStockQuery(normQ, context, locale);
+    const catalogAnswer = tryAnswerCatalogOrStockQuery(
+      normQ,
+      context,
+      locale,
+      false
+    );
     if (catalogAnswer) {
       return catalogAnswer;
     }
@@ -1830,7 +1934,12 @@ export function answerTaOiQuestion(
     return bestRule.answer(context, locale, guideKey, t);
   }
 
-  const catalogFallback = tryAnswerCatalogOrStockQuery(normQ, context, locale);
+  const catalogFallback = tryAnswerCatalogOrStockQuery(
+    normQ,
+    context,
+    locale,
+    true
+  );
   if (catalogFallback) {
     return catalogFallback;
   }
