@@ -118,7 +118,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 bg-[#EAFBF0] border border-[#CDE9D5] p-1 rounded-2xl text-sm font-bold">
+      <div className="grid grid-cols-2 bg-[#CBEFD9]/80 border border-[#9AE0B6] p-1 rounded-2xl text-sm font-bold">
         <button
           type="button"
           onClick={() => {
@@ -177,7 +177,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t.auth.fullNamePlaceholder}
-                className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
+                className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#9AE0B6] bg-white shadow-xs focus:outline-none focus:border-[#16A34A]"
               />
             </div>
           </div>
@@ -195,7 +195,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.auth.emailPlaceholder}
-              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
+              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#9AE0B6] bg-white shadow-xs focus:outline-none focus:border-[#16A34A]"
             />
           </div>
         </div>
@@ -213,7 +213,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.auth.passwordPlaceholder}
-              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#CDE9D5] bg-white focus:outline-none focus:border-[#16A34A]"
+              className="w-full pl-10 pr-3 py-2.5 text-base rounded-xl border-2 border-[#9AE0B6] bg-white shadow-xs focus:outline-none focus:border-[#16A34A]"
             />
           </div>
         </div>
