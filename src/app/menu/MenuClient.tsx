@@ -231,7 +231,7 @@ export function MenuClient({
       <!DOCTYPE html><html lang="${locale}"><head><meta charset="utf-8" /><title>${tableTitle}</title>
       <style>body{font-family:'Noto Sans Lao','Segoe UI',Arial,sans-serif;text-align:center;padding:24px;color:#14532D}img{width:240px;height:240px;border:2px solid #CDE9D5;border-radius:16px;padding:8px}</style>
       </head><body>
-      <h2>Tà Ơi Coffee</h2>
+      <h2>Ta Oi Coffee</h2>
       <h3>${tableTitle} (${zoneTitle})</h3>
       <img src="${qrTableModal.dataUrl}" />
       <p style="font-size:13px;margin-top:12px">${t.menu.tableQrDesc}</p>

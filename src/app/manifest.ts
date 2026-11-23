@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tà Ơi Coffee - Quản lý Quán",
-    short_name: "Tà Ơi POS",
+    name: "Ta Oi Coffee - Quản lý Quán",
+    short_name: "Ta Oi POS",
     description:
-      "Hệ thống quản lý bán hàng, kho nguyên liệu, cân đối và chi phí quán cà phê Tà Ơi",
+      "Hệ thống quản lý bán hàng, kho nguyên liệu, cân đối và chi phí quán cà phê Ta Oi",
     start_url: "/",
     display: "standalone",
     background_color: "#F2FBF4",

@@ -591,4 +591,9 @@ CREATE POLICY "shifts_update_staff" ON public.shifts FOR UPDATE TO authenticated
 CREATE POLICY "shifts_delete_admin" ON public.shifts FOR DELETE TO authenticated
   USING (public.current_user_role() IN ('developer', 'admin'));
 
+-- 8. Update default shop name to 'Ta Oi Coffee'
+UPDATE public.shop_settings
+SET shop_name = 'Ta Oi Coffee'
+WHERE id = 1 AND shop_name = 'Tà Ơi Coffee';
+
 COMMIT;

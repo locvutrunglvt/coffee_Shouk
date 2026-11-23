@@ -34,7 +34,7 @@ const SETTINGS_LITE_COLUMNS =
 
 const DEFAULT_SETTINGS: ShopSettings = {
   id: 1,
-  shop_name: "Tà Ơi Coffee",
+  shop_name: "Ta Oi Coffee",
   address: "",
   phone: "",
   currency_code: "LAK",
@@ -86,10 +86,16 @@ const fetchAuthCore = cache(async () => {
       role: "staff" as UserRole,
       is_active: true,
     },
-    settings: {
-      ...DEFAULT_SETTINGS,
-      ...(settingsRes.data as Partial<ShopSettings> | null),
-    },
+    settings: (() => {
+      const merged = {
+        ...DEFAULT_SETTINGS,
+        ...(settingsRes.data as Partial<ShopSettings> | null),
+      };
+      if (merged.shop_name === "Tà Ơi Coffee") {
+        merged.shop_name = "Ta Oi Coffee";
+      }
+      return merged;
+    })(),
   };
 });
 

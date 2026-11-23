@@ -4,13 +4,13 @@ import { I18nProvider } from "@/components/I18nProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tà Ơi Coffee - Quản lý Quán",
+  title: "Ta Oi Coffee - Quản lý Quán",
   description:
-    "Hệ thống quản lý bán hàng POS, kho nguyên liệu, cân đối và chi phí vận hành quán cà phê Tà Ơi",
+    "Hệ thống quản lý bán hàng POS, kho nguyên liệu, cân đối và chi phí vận hành quán cà phê Ta Oi",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Tà Ơi POS",
+    title: "Ta Oi POS",
   },
 };
 

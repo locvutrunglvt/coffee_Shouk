@@ -53,15 +53,22 @@ export default async function PublicOrderPage({
         { data: [] },
       ];
 
-  const settings: ShopSettings = (settingsRes.data as ShopSettings | null) ?? {
+  const rawSettings = (settingsRes.data as ShopSettings | null) ?? {
     id: 1,
-    shop_name: "Tà Ơi Coffee",
+    shop_name: "Ta Oi Coffee",
     address: "",
     phone: "",
     currency_code: "LAK",
     currency_symbol: "₭",
     qr_image_url: "",
     bank_info: "",
+  };
+  const settings: ShopSettings = {
+    ...rawSettings,
+    shop_name:
+      rawSettings.shop_name === "Tà Ơi Coffee"
+        ? "Ta Oi Coffee"
+        : rawSettings.shop_name,
   };
 
   return (

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   const wb = XLSX.utils.book_new();
   wb.Props = {
-    Title: `${ctx.settings?.shop_name ?? "Tà Ơi"} - ${t.reports.plStatementTitle} (${month})`,
+    Title: `${ctx.settings?.shop_name ?? "Ta Oi"} - ${t.reports.plStatementTitle} (${month})`,
     Author: "Lộc Vũ Trung",
     CreatedDate: new Date(),
   };
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
   // Sheet 1: P&L Summary referencing raw sheets via formulas
   const pnlAoa: unknown[][] = [
     [
-      `${ctx.settings?.shop_name ?? "Tà Ơi"} - ${t.reports.plStatementTitle} (${month})`,
+      `${ctx.settings?.shop_name ?? "Ta Oi"} - ${t.reports.plStatementTitle} (${month})`,
       ctx.settings?.currency_code ?? "LAK",
     ],
     [],

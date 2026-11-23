@@ -1,5 +1,5 @@
 -- ============================================================
--- TÀ ƠI COFFEE SHOP - SAMPLE SEED DATA (Optional)
+-- TA OI COFFEE SHOP - SAMPLE SEED DATA (Optional)
 -- Run this in Supabase SQL Editor AFTER running schema.sql
 -- ============================================================
 

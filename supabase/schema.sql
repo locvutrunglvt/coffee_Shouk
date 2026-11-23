@@ -1,5 +1,5 @@
 -- ============================================================
--- TÀ ƠI COFFEE SHOP (coffee_Shouk) - SUPABASE DATABASE SCHEMA
+-- TA OI COFFEE SHOP (coffee_Shouk) - SUPABASE DATABASE SCHEMA
 -- Covers: Auth/RBAC, Shop Settings, Menu/POS, Shifts/Cashflow,
 --         Inventory/Import/Recipes/Stock-take, Expenses & P&L
 -- ============================================================
@@ -44,7 +44,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- 2. SHOP SETTINGS (Singleton config: currency LAK/VND, QR image, shop info)
 CREATE TABLE IF NOT EXISTS public.shop_settings (
   id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  shop_name TEXT NOT NULL DEFAULT 'Tà Ơi Coffee',
+  shop_name TEXT NOT NULL DEFAULT 'Ta Oi Coffee',
   address TEXT DEFAULT '',
   phone TEXT DEFAULT '',
   currency_code TEXT NOT NULL DEFAULT 'LAK',
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.shop_settings (
 );
 
 INSERT INTO public.shop_settings (id, shop_name, currency_code, currency_symbol)
-VALUES (1, 'Tà Ơi Coffee', 'LAK', '₭')
+VALUES (1, 'Ta Oi Coffee', 'LAK', '₭')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. PROFILES & RBAC

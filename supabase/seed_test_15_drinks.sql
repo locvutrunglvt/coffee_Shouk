@@ -1,5 +1,5 @@
 -- ============================================================
--- TÀ ƠI COFFEE - 15 TEST DRINKS & FULL OPERATION SEED DATA
+-- TA OI COFFEE - 15 TEST DRINKS & FULL OPERATION SEED DATA
 -- Run in Supabase SQL Editor (or use the 1-click button in /settings)
 -- ============================================================
 

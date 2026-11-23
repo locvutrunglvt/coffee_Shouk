@@ -19,14 +19,14 @@ export default async function LoginPage() {
         <div className="flex flex-col items-center text-center space-y-2.5">
           <Image
             src="/logo-taoi.jpeg"
-            alt="Tà Ơi Coffee"
+            alt="Ta Oi Coffee"
             width={88}
             height={88}
             className="w-22 h-22 rounded-2xl object-cover border-2 border-[#86EFAC] shadow-md"
             priority
           />
           <h1 className="text-2xl font-extrabold text-[#14532D] flex items-center gap-2">
-            <span>Tà Ơi Coffee</span>
+            <span>Ta Oi Coffee</span>
             <Sprout className="w-5 h-5 text-[#16A34A]" />
           </h1>
           <p className="text-sm font-medium text-[#2F6844]">{t.auth.subtitle}</p>
