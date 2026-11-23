@@ -50,6 +50,30 @@ export interface TaOiLiveContext {
   currencyCode: string;
   fetchedAt: string;
   isOffline: boolean;
+  // Menu Catalog (safe for all authenticated staff)
+  catalogCategories: Array<{
+    id: string;
+    name: string;
+    nameEn: string;
+    nameLo: string;
+  }>;
+  catalogProducts: Array<{
+    id: string;
+    categoryId: string | null;
+    name: string;
+    nameEn: string;
+    nameLo: string;
+    basePrice: number;
+    isAvailable: boolean;
+    variants: Array<{ name: string; price: number }>;
+  }>;
+  catalogToppings: Array<{
+    name: string;
+    nameEn: string;
+    nameLo: string;
+    price: number;
+    isAvailable: boolean;
+  }>;
   // Bar / Queue (safe for all operational roles)
   barPendingCount: number;
   barPreparingCount: number;
@@ -72,6 +96,12 @@ export interface TaOiLiveContext {
     expectedCash: number;
   } | null;
   // Inventory & Stock-take (names for manager+/barista; costs/imports/stock-take for manager+)
+  allIngredients: Array<{
+    name: string;
+    currentStock: number;
+    minStock: number;
+    baseUnit: string;
+  }>;
   lowStockIngredients: Array<{
     name: string;
     currentStock: number;
@@ -133,6 +163,9 @@ export async function fetchTaOiLiveContext(
       { hour: "2-digit", minute: "2-digit" }
     ),
     isOffline: typeof navigator !== "undefined" ? !navigator.onLine : false,
+    catalogCategories: [],
+    catalogProducts: [],
+    catalogToppings: [],
     barPendingCount: 0,
     barPreparingCount: 0,
     barReadyCount: 0,
@@ -145,6 +178,7 @@ export async function fetchTaOiLiveContext(
     todayQrTotal: perms.canViewRevenue ? 0 : null,
     todayTopItems: [],
     openShift: null,
+    allIngredients: [],
     lowStockIngredients: [],
     totalIngredientsCount: 0,
     totalInventoryValue: perms.canViewInventoryCosts ? 0 : null,
@@ -168,7 +202,10 @@ export async function fetchTaOiLiveContext(
     const [
       ordersRes,
       barQueueRes,
+      catRes,
       prodRes,
+      varRes,
+      topRes,
       shiftRes,
       ingRes,
       importsRes,
@@ -193,9 +230,25 @@ export async function fetchTaOiLiveContext(
         .gte("created_at", todayStartIso)
         .neq("status", "cancelled"),
       supabase
+        .from("categories")
+        .select("id, name, name_en, name_lo")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
+      supabase
         .from("products")
-        .select("name, name_en, name_lo, is_available")
-        .eq("is_active", true),
+        .select("id, category_id, name, name_en, name_lo, base_price, is_available")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
+      supabase
+        .from("product_variants")
+        .select("product_id, name, price")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("toppings")
+        .select("name, name_en, name_lo, price, is_available")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
       perms.canViewShift
         ? supabase
             .from("shifts")
@@ -314,14 +367,59 @@ export async function fetchTaOiLiveContext(
         .map(([name, qty]) => ({ name, qty }));
     }
 
+    if (catRes.status === "fulfilled" && Array.isArray(catRes.value.data)) {
+      ctx.catalogCategories = (
+        catRes.value.data as Array<{
+          id: string;
+          name: string;
+          name_en?: string;
+          name_lo?: string;
+        }>
+      ).map((c) => ({
+        id: c.id,
+        name: c.name,
+        nameEn: c.name_en ?? "",
+        nameLo: c.name_lo ?? "",
+      }));
+    }
+
+    const variantsByProduct = new Map<
+      string,
+      Array<{ name: string; price: number }>
+    >();
+    if (varRes.status === "fulfilled" && Array.isArray(varRes.value.data)) {
+      for (const v of varRes.value.data as Array<{
+        product_id: string;
+        name: string;
+        price: number;
+      }>) {
+        const arr = variantsByProduct.get(v.product_id) ?? [];
+        arr.push({ name: v.name, price: Number(v.price ?? 0) });
+        variantsByProduct.set(v.product_id, arr);
+      }
+    }
+
     if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value.data)) {
       const prods = prodRes.value.data as Array<{
+        id: string;
+        category_id: string | null;
         name: string;
         name_en?: string;
         name_lo?: string;
+        base_price: number;
         is_available: boolean;
       }>;
       ctx.activeMenuCount = prods.length;
+      ctx.catalogProducts = prods.map((p) => ({
+        id: p.id,
+        categoryId: p.category_id,
+        name: p.name,
+        nameEn: p.name_en ?? "",
+        nameLo: p.name_lo ?? "",
+        basePrice: Number(p.base_price ?? 0),
+        isAvailable: p.is_available,
+        variants: variantsByProduct.get(p.id) ?? [],
+      }));
       ctx.soldOutProducts = prods
         .filter((p) => !p.is_available)
         .map((p) =>
@@ -332,6 +430,24 @@ export async function fetchTaOiLiveContext(
             : translateText(p.name, locale)
         )
         .slice(0, 8);
+    }
+
+    if (topRes.status === "fulfilled" && Array.isArray(topRes.value.data)) {
+      ctx.catalogToppings = (
+        topRes.value.data as Array<{
+          name: string;
+          name_en?: string;
+          name_lo?: string;
+          price: number;
+          is_available: boolean;
+        }>
+      ).map((tp) => ({
+        name: tp.name,
+        nameEn: tp.name_en ?? "",
+        nameLo: tp.name_lo ?? "",
+        price: Number(tp.price ?? 0),
+        isAvailable: tp.is_available,
+      }));
     }
 
     if (
@@ -362,6 +478,12 @@ export async function fetchTaOiLiveContext(
         avg_unit_cost?: number;
       }>;
       ctx.totalIngredientsCount = rows.length;
+      ctx.allIngredients = rows.map((i) => ({
+        name: i.name,
+        currentStock: Number(i.current_stock),
+        minStock: Number(i.min_stock),
+        baseUnit: i.base_unit,
+      }));
       ctx.lowStockIngredients = rows
         .filter((i) => Number(i.current_stock) <= Number(i.min_stock))
         .slice(0, 8)
@@ -1339,6 +1461,336 @@ export function getTaOiQuickQuestions(t: Dictionary, role: UserRole) {
   return chips;
 }
 
+function formatProductPrice(
+  product: TaOiLiveContext["catalogProducts"][number],
+  currencyCode: string
+): string {
+  if (product.variants.length > 0) {
+    return product.variants
+      .map((v) => `${v.name}: ${formatMoney(v.price, currencyCode)}`)
+      .join(" | ");
+  }
+  return formatMoney(product.basePrice, currencyCode);
+}
+
+function getLocalizedCatalogName(
+  item: { name: string; nameEn?: string; nameLo?: string },
+  locale: Locale
+): string {
+  if (locale === "lo" && item.nameLo) return item.nameLo;
+  if (locale === "en" && item.nameEn) return item.nameEn;
+  return translateText(item.name, locale);
+}
+
+function getAllSearchTerms(item: {
+  name: string;
+  nameEn?: string;
+  nameLo?: string;
+}): string[] {
+  return [
+    item.name,
+    item.nameEn ?? "",
+    item.nameLo ?? "",
+    translateText(item.name, "en"),
+    translateText(item.name, "lo"),
+  ]
+    .map((s) => normalizeAiText(s))
+    .filter((s) => s.length >= 2);
+}
+
+function tryAnswerCatalogOrStockQuery(
+  normQ: string,
+  ctx: TaOiLiveContext | null,
+  locale: Locale
+): string | null {
+  if (!ctx) return null;
+  const cur = ctx.currencyCode || "LAK";
+  const perms = getAiRolePermissions(ctx.role);
+
+  // 1. Direct Ingredient Stock Match (only if role can inspect stock quantities)
+  if (perms.canViewLowStockNames && ctx.allIngredients.length > 0) {
+    const matchedIngs = ctx.allIngredients.filter((ing) => {
+      const nIng = normalizeAiText(ing.name);
+      return nIng.length >= 3 && normQ.includes(nIng);
+    });
+    if (matchedIngs.length > 0) {
+      const lines = matchedIngs.map((i) => {
+        const lowTag =
+          i.currentStock <= i.minStock
+            ? locale === "lo"
+              ? " (⚠️ ໃກ້ໝົດ)"
+              : locale === "en"
+              ? " (⚠️ Low)"
+              : " (⚠️ Sắp hết)"
+            : "";
+        return `• ${i.name}: ${i.currentStock} ${i.baseUnit} (min ${i.minStock} ${i.baseUnit})${lowTag}`;
+      });
+      if (locale === "lo") {
+        return `📦 ຍອດວັດຖຸດິບໃນສາງ:\n${lines.join("\n")}`;
+      }
+      if (locale === "en") {
+        return `📦 Current Ingredient Stock:\n${lines.join("\n")}`;
+      }
+      return `📦 Tồn kho nguyên liệu hiện tại:\n${lines.join("\n")}`;
+    }
+  }
+
+  // 2. Match Categories & Products (e.g. "cà phê có mấy loại", "trà có gì", "bạc xỉu giá bao nhiêu")
+  const stopWords = new Set([
+    "co",
+    "may",
+    "loai",
+    "bao",
+    "nhieu",
+    "gi",
+    "nao",
+    "mon",
+    "ban",
+    "gia",
+    "tien",
+    "la",
+    "khong",
+    "con",
+    "het",
+    "the",
+    "nhung",
+    "cac",
+    "trong",
+    "quan",
+    "cua",
+    "toi",
+    "thu",
+    "hoi",
+    "cho",
+    "biet",
+    "xem",
+    "how",
+    "many",
+    "what",
+    "is",
+    "are",
+    "price",
+    "much",
+    "have",
+    "any",
+    "list",
+    "of",
+    "do",
+    "you",
+    "in",
+    "types",
+    "kinds",
+    "menu",
+    "drinks",
+    "drink",
+    "ມີ",
+    "ຈັກ",
+    "ຊະນິດ",
+    "ລາຄາ",
+    "ເທົ່າໃດ",
+    "ແດ່",
+    "ບໍ່",
+    "ຫຍັງ",
+    "ຂາຍ",
+  ]);
+  const meaningfulQuery = normQ
+    .split(/\s+/)
+    .filter((w) => w && !stopWords.has(w))
+    .join(" ")
+    .trim();
+
+  // Priority A: Direct product match (exact phrase inside normQ, e.g. "cà phê đen đá giá bao nhiêu")
+  const exactProducts = ctx.catalogProducts.filter((prod) =>
+    getAllSearchTerms(prod).some((term) => normQ.includes(term))
+  );
+
+  // Priority B: Category match + product match using meaningful search keyword (e.g. "cà phê" -> "Cà phê")
+  const matchedCatIds = new Set<string>();
+  const matchedCatNames: string[] = [];
+  for (const cat of ctx.catalogCategories) {
+    const terms = getAllSearchTerms(cat);
+    const hit =
+      terms.some((term) => normQ.includes(term)) ||
+      (meaningfulQuery.length >= 2 &&
+        terms.some((term) => term.includes(meaningfulQuery)));
+    if (hit) {
+      matchedCatIds.add(cat.id);
+      matchedCatNames.push(getLocalizedCatalogName(cat, locale));
+    }
+  }
+
+  const matchedProductsMap = new Map<
+    string,
+    TaOiLiveContext["catalogProducts"][number]
+  >();
+  if (exactProducts.length > 0 && matchedCatIds.size === 0) {
+    for (const p of exactProducts) matchedProductsMap.set(p.id, p);
+  } else if (
+    exactProducts.length > 0 &&
+    exactProducts.every((p) =>
+      getAllSearchTerms(p).some(
+        (pt) => pt.length > (meaningfulQuery.length || 0) - 2 && normQ.includes(pt)
+      )
+    )
+  ) {
+    // Specific drink asked (e.g. "cà phê đen đá" > "cà phê"), prioritize exact drink(s) unless no specific product exceeded category length
+    const catMaxLen = Math.max(
+      0,
+      ...ctx.catalogCategories
+        .filter((c) => matchedCatIds.has(c.id))
+        .flatMap((c) => getAllSearchTerms(c).map((t) => t.length))
+    );
+    const deeperProds = exactProducts.filter((p) =>
+      getAllSearchTerms(p).some((pt) => normQ.includes(pt) && pt.length > catMaxLen)
+    );
+    if (deeperProds.length > 0) {
+      for (const p of deeperProds) matchedProductsMap.set(p.id, p);
+    }
+  }
+
+  if (matchedProductsMap.size === 0) {
+    for (const prod of ctx.catalogProducts) {
+      if (prod.categoryId && matchedCatIds.has(prod.categoryId)) {
+        matchedProductsMap.set(prod.id, prod);
+        continue;
+      }
+      const terms = getAllSearchTerms(prod);
+      if (
+        terms.some((term) => normQ.includes(term)) ||
+        (meaningfulQuery.length >= 2 &&
+          terms.some((term) => term.includes(meaningfulQuery)))
+      ) {
+        matchedProductsMap.set(prod.id, prod);
+      }
+    }
+  }
+
+  if (matchedProductsMap.size > 0) {
+    const list = Array.from(matchedProductsMap.values());
+    const headingName =
+      matchedCatNames.length > 0 && list.length > 1
+        ? matchedCatNames.join(", ")
+        : meaningfulQuery.length >= 2 && list.length > 1
+        ? meaningfulQuery.toUpperCase()
+        : getLocalizedCatalogName(list[0], locale);
+    const lines = list.map((p, idx) => {
+      const name = getLocalizedCatalogName(p, locale);
+      const priceStr = formatProductPrice(p, cur);
+      const statusStr = p.isAvailable
+        ? ""
+        : locale === "lo"
+        ? " [ໝົດຊົ່ວຄາວ]"
+        : locale === "en"
+        ? " [Sold out]"
+        : " [Tạm hết]";
+      return `${idx + 1}. ${name} — ${priceStr}${statusStr}`;
+    });
+
+    if (locale === "lo") {
+      return `☕ ${headingName} — ປັດຈຸບັນມີທັງໝົດ ${list.length} ເມນູ:\n${lines.join("\n")}`;
+    }
+    if (locale === "en") {
+      return `☕ ${headingName} — Currently ${list.length} item(s):\n${lines.join("\n")}`;
+    }
+    return `☕ ${headingName} — Hiện có ${list.length} loại trong thực đơn:\n${lines.join("\n")}`;
+  }
+
+  // 3. Toppings Query
+  const toppingAskHints = [
+    "topping",
+    "tran chau",
+    "thach",
+    "kem cheese",
+    "pudding",
+    "ທັອບປິ້ງ",
+    "ໄຂ່ມຸກ",
+  ];
+  const matchedToppings = ctx.catalogToppings.filter((tp) =>
+    getAllSearchTerms(tp).some((term) => normQ.includes(term))
+  );
+  if (
+    matchedToppings.length > 0 ||
+    toppingAskHints.some((h) => normQ.includes(normalizeAiText(h)))
+  ) {
+    const list =
+      matchedToppings.length > 0 ? matchedToppings : ctx.catalogToppings;
+    if (list.length === 0) {
+      return locale === "lo"
+        ? "🧋 ປັດຈຸບັນຍັງບໍ່ມີລາຍການ Topping ໃນລະບົບ."
+        : locale === "en"
+        ? "🧋 No active toppings configured yet."
+        : "🧋 Hiện quán chưa tạo Topping nào trong thực đơn.";
+    }
+    const lines = list.map((tp, idx) => {
+      const nm = getLocalizedCatalogName(tp, locale);
+      const avail = tp.isAvailable
+        ? ""
+        : locale === "lo"
+        ? " [ໝົດ]"
+        : locale === "en"
+        ? " [Sold out]"
+        : " [Tạm hết]";
+      return `${idx + 1}. ${nm} — ${formatMoney(tp.price, cur)}${avail}`;
+    });
+    if (locale === "lo") {
+      return `🧋 Topping ທັງໝົດ (${list.length} ຊະນິດ):\n${lines.join("\n")}`;
+    }
+    if (locale === "en") {
+      return `🧋 Available Toppings (${list.length}):\n${lines.join("\n")}`;
+    }
+    return `🧋 Danh sách Topping hiện có (${list.length} loại):\n${lines.join("\n")}`;
+  }
+
+  // 4. Broad Menu Overview Query ("có mấy loại", "có những món nào", "menu có gì")
+  const broadMenuHints = [
+    "may loai",
+    "bao nhieu mon",
+    "co nhung mon",
+    "danh sach mon",
+    "co gi",
+    "do uong nao",
+    "mon nao",
+    "thuc don",
+    "menu",
+    "how many drinks",
+    "what drinks",
+    "what coffee",
+    "drinks list",
+    "ມີຈັກ",
+    "ມີຫຍັງແດ່",
+    "ລາຍການເຄື່ອງດື່ມ",
+  ];
+  if (broadMenuHints.some((h) => normQ.includes(normalizeAiText(h)))) {
+    const catSummary = ctx.catalogCategories.map((c) => {
+      const count = ctx.catalogProducts.filter(
+        (p) => p.categoryId === c.id
+      ).length;
+      return `• ${getLocalizedCatalogName(c, locale)}: ${count}`;
+    });
+    if (locale === "lo") {
+      return (
+        `📖 ສະຫຼຸບເມນູ ${ctx.shopName} (${ctx.activeMenuCount} ເມນູ, ${ctx.catalogToppings.length} Topping):\n` +
+        `${catSummary.join("\n")}\n\n` +
+        `👉 ລອງຖາມລະອຽດເຊັ່ນ: "ກາເຟມີຈັກຊະນິດ" ຫຼື ພິມຊື່ເມນູເພື່ອເບິ່ງລາຄາ.`
+      );
+    }
+    if (locale === "en") {
+      return (
+        `📖 ${ctx.shopName} Menu Overview (${ctx.activeMenuCount} drinks, ${ctx.catalogToppings.length} toppings):\n` +
+        `${catSummary.join("\n")}\n\n` +
+        `👉 Try asking a category or drink name (e.g. "How many coffee drinks?" or "Latte price").`
+      );
+    }
+    return (
+      `📖 Tổng quan Thực đơn ${ctx.shopName} (${ctx.activeMenuCount} món, ${ctx.catalogToppings.length} Topping):\n` +
+      `${catSummary.join("\n")}\n\n` +
+      `👉 Bạn có thể hỏi cụ thể theo nhóm hoặc tên món (VD: "cà phê có mấy loại", "trà sữa có gì", "bạc xỉu giá bao nhiêu").`
+    );
+  }
+
+  return null;
+}
+
 export function answerTaOiQuestion(
   question: string,
   context: TaOiLiveContext | null,
@@ -1365,8 +1817,22 @@ export function answerTaOiQuestion(
     }
   }
 
+  // Prefer live catalog/ingredient search when question specifically targets a category, drink, topping, or stock count
+  // and didn't strongly hit an operational/workflow rule.
+  if (!bestRule || bestScore <= 1) {
+    const catalogAnswer = tryAnswerCatalogOrStockQuery(normQ, context, locale);
+    if (catalogAnswer) {
+      return catalogAnswer;
+    }
+  }
+
   if (bestRule) {
     return bestRule.answer(context, locale, guideKey, t);
+  }
+
+  const catalogFallback = tryAnswerCatalogOrStockQuery(normQ, context, locale);
+  if (catalogFallback) {
+    return catalogFallback;
   }
 
   const role = context?.role ?? "staff";
