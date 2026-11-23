@@ -3,6 +3,8 @@ import * as XLSX from "xlsx";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthContext } from "@/lib/auth";
 import { computeMonthlyPnL } from "@/lib/pnl";
+import { getLocalCurrentMonthStr } from "@/lib/format";
+import { translateText } from "@/lib/i18n/catalogTranslator";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
 
 export async function GET(request: NextRequest) {
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
   const month =
     monthParam && /^\d{4}-\d{2}$/.test(monthParam)
       ? monthParam
-      : new Date().toISOString().slice(0, 7);
+      : getLocalCurrentMonthStr();
   const locale = normalizeLocale(searchParams.get("locale"));
   const t = getDictionary(locale);
 
@@ -99,7 +101,7 @@ export async function GET(request: NextRequest) {
       const r = idx + 2;
       return [
         m.created_at.slice(0, 10),
-        m.ingredient_name,
+        translateText(m.ingredient_name, locale),
         m.movement_type,
         m.quantity_change,
         m.unit_cost,

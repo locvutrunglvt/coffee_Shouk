@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, getLocalTodayDateStr } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
 import type { UserProfile } from "@/lib/auth";
 import type { IngredientRow } from "@/app/inventory/InventoryClient";
@@ -61,7 +61,7 @@ export function StockTakeClient({
       const { data: created, error } = await supabase
         .from("stock_takes")
         .insert({
-          take_date: new Date().toISOString().slice(0, 10),
+          take_date: getLocalTodayDateStr(),
           status: "draft",
           created_by: profile.id,
         })
@@ -125,37 +125,60 @@ export function StockTakeClient({
         0
       );
 
-      for (const it of items) {
-        await supabase
-          .from("stock_take_items")
-          .update({
-            actual_stock: it.actual_stock,
-            difference: it.difference,
-            variance_value: it.variance_value,
-            reason: it.reason,
-          })
-          .eq("id", it.id);
+      const nowIso = new Date().toISOString();
+      const movementsPayload: {
+        ingredient_id: string;
+        movement_type: "stock_take_adjust";
+        quantity_change: number;
+        stock_after: number;
+        unit_cost: number;
+        reference_id: string;
+        note: string;
+        created_by: string;
+      }[] = [];
 
-        if (it.difference !== 0) {
-          await supabase
-            .from("ingredients")
-            .update({
-              current_stock: it.actual_stock,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", it.ingredient_id);
+      await Promise.all(
+        items.map(async (it) => {
+          const ops: Promise<unknown>[] = [
+            supabase
+              .from("stock_take_items")
+              .update({
+                actual_stock: it.actual_stock,
+                difference: it.difference,
+                variance_value: it.variance_value,
+                reason: it.reason,
+              })
+              .eq("id", it.id) as unknown as Promise<unknown>,
+          ];
 
-          await supabase.from("stock_movements").insert({
-            ingredient_id: it.ingredient_id,
-            movement_type: "stock_take_adjust",
-            quantity_change: it.difference,
-            stock_after: it.actual_stock,
-            unit_cost: it.unit_cost,
-            reference_id: draft.id,
-            note: it.reason || draft.take_date,
-            created_by: profile.id,
-          });
-        }
+          if (it.difference !== 0) {
+            ops.push(
+              supabase
+                .from("ingredients")
+                .update({
+                  current_stock: it.actual_stock,
+                  updated_at: nowIso,
+                })
+                .eq("id", it.ingredient_id) as unknown as Promise<unknown>
+            );
+            movementsPayload.push({
+              ingredient_id: it.ingredient_id,
+              movement_type: "stock_take_adjust",
+              quantity_change: it.difference,
+              stock_after: it.actual_stock,
+              unit_cost: it.unit_cost,
+              reference_id: draft.id,
+              note: it.reason || draft.take_date,
+              created_by: profile.id,
+            });
+          }
+
+          await Promise.all(ops);
+        })
+      );
+
+      if (movementsPayload.length > 0) {
+        await supabase.from("stock_movements").insert(movementsPayload);
       }
 
       const { data: finalized } = await supabase

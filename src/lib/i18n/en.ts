@@ -191,6 +191,8 @@ export const en: Dictionary = {
     qrScanHint: "Customer scans QR or transfers using the shop bank details",
     noQrConfigured: "No QR image configured in Settings.",
     orderCreatedMsg: "Order created successfully!",
+    orderCreateError: "Could not create order. Please check your connection and retry.",
+    orderCancelledMsg: "Order cancelled and balances updated.",
     recentOrders: "Recent orders today",
     collectPayment: "Collect payment",
     cancelOrder: "Cancel order",
@@ -495,6 +497,7 @@ export const en: Dictionary = {
     deliveryAddress: "Delivery address",
     orderSummaryTitle: "Order summary",
     payAtCounterOption: "Pay at counter (Cash)",
+    rateLimitMsg: "You just submitted an order. Please wait a few seconds before sending another.",
   },
   guides: {
     toggleOpen: "Show step-by-step guide",

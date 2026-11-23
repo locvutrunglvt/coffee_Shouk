@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { ModuleGuide } from "@/components/ModuleGuide";
 import { requireRouteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, getLocalTodayStartIso } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
 import {
   AlertTriangle,
@@ -23,8 +23,7 @@ import {
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStartIso = getLocalTodayStartIso();
 
   const [{ profile, settings }, { t }, ordersRes, lowStockRes, recurringRes, openShiftRes] =
     await Promise.all([
@@ -34,7 +33,7 @@ export default async function DashboardPage() {
         ? supabase
             .from("orders")
             .select("total_amount, payment_status, status")
-            .gte("created_at", todayStart.toISOString())
+            .gte("created_at", todayStartIso)
             .eq("payment_status", "paid")
             .neq("status", "cancelled")
         : Promise.resolve({ data: [] }),

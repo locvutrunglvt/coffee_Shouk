@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Hệ thống quản lý bán hàng, kho nguyên liệu, cân đối và chi phí quán cà phê Tà Ơi",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAF7F2",
-    theme_color: "#4A2C18",
+    background_color: "#F2FBF4",
+    theme_color: "#16A34A",
     icons: [
       {
         src: "/logo-taoi.jpeg",

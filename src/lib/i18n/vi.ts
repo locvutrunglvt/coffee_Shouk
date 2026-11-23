@@ -189,6 +189,8 @@ export const vi = {
     qrScanHint: "Khách quét mã QR hoặc chuyển khoản theo thông tin quán",
     noQrConfigured: "Chưa cài đặt ảnh QR trong mục Cài đặt quán.",
     orderCreatedMsg: "Đã tạo đơn thành công!",
+    orderCreateError: "Không thể tạo đơn hàng. Kiểm tra kết nối mạng và thử lại.",
+    orderCancelledMsg: "Đã hủy đơn hàng và cập nhật dữ liệu.",
     recentOrders: "Đơn gần đây hôm nay",
     collectPayment: "Thu tiền",
     cancelOrder: "Hủy đơn",
@@ -493,6 +495,7 @@ export const vi = {
     deliveryAddress: "Địa chỉ giao hàng",
     orderSummaryTitle: "Thông tin đơn hàng",
     payAtCounterOption: "Thanh toán tại quầy (Tiền mặt)",
+    rateLimitMsg: "Bạn vừa gửi đơn xong. Vui lòng đợi vài giây trước khi gửi thêm đơn mới.",
   },
   guides: {
     toggleOpen: "Xem hướng dẫn chi tiết",

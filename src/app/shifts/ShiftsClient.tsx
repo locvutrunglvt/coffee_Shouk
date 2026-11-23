@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatDateTimeVN, formatMoney } from "@/lib/format";
+import { formatDateTimeVN, formatMoney, getLocalTodayDateStr } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
 import type { UserProfile } from "@/lib/auth";
 import { CheckCircle2, Lock, Play, PlusCircle, Wallet } from "lucide-react";
@@ -63,9 +63,24 @@ export function ShiftsClient({
 
   async function handleOpenShift(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     try {
       const supabase = createClient();
+      // Guard against duplicate open shifts from another device
+      const { data: existingOpen } = await supabase
+        .from("shifts")
+        .select("*")
+        .eq("status", "open")
+        .order("opened_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingOpen) {
+        setOpenShift(existingOpen as ShiftRow);
+        return;
+      }
+
       const startCash = Number(openingCash) || 0;
       const { data, error } = await supabase
         .from("shifts")
@@ -93,7 +108,7 @@ export function ShiftsClient({
     try {
       const supabase = createClient();
       const amt = Number(pettyAmount) || 0;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getLocalTodayDateStr();
       const month = today.slice(0, 7);
 
       const { data: expData, error: expErr } = await supabase
@@ -113,19 +128,29 @@ export function ShiftsClient({
 
       if (expErr || !expData) throw expErr;
 
+      const { error: rpcErr } = await supabase.rpc("adjust_shift_totals", {
+        p_shift_id: openShift.id,
+        p_cash_delta: 0,
+        p_qr_delta: 0,
+        p_other_delta: 0,
+        p_petty_delta: amt,
+      });
+
       const nextPettyTotal = Number(openShift.total_petty_expenses) + amt;
       const nextExpected =
         Number(openShift.opening_cash) +
         Number(openShift.total_cash_sales) -
         nextPettyTotal;
 
-      await supabase
-        .from("shifts")
-        .update({
-          total_petty_expenses: nextPettyTotal,
-          expected_cash: nextExpected,
-        })
-        .eq("id", openShift.id);
+      if (rpcErr) {
+        await supabase
+          .from("shifts")
+          .update({
+            total_petty_expenses: nextPettyTotal,
+            expected_cash: nextExpected,
+          })
+          .eq("id", openShift.id);
+      }
 
       setOpenShift({
         ...openShift,

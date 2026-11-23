@@ -81,6 +81,7 @@ export function OrderPublicClient({
 
   const [cart, setCart] = useState<PublicCartItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [lastSubmittedAt, setLastSubmittedAt] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState("");
   const [confirmed, setConfirmed] = useState<{
     order_number: number;
@@ -157,6 +158,10 @@ export function OrderPublicClient({
 
   async function handleSubmitOrder() {
     if (cart.length === 0 || submitting) return;
+    if (lastSubmittedAt > 0 && Date.now() - lastSubmittedAt < 15000) {
+      setErrorMsg(t.orderPublic.rateLimitMsg);
+      return;
+    }
     setSubmitting(true);
     setErrorMsg("");
     try {
@@ -165,7 +170,7 @@ export function OrderPublicClient({
         product_id: i.productId,
         variant_id: i.variantId,
         topping_ids: i.toppings.map((tp) => tp.id),
-        quantity: i.quantity,
+        quantity: Math.min(50, Math.max(1, i.quantity)),
         note: i.note,
       }));
 
@@ -195,6 +200,7 @@ export function OrderPublicClient({
         order_number: res.order_number,
         total_amount: Number(res.total_amount),
       });
+      setLastSubmittedAt(Date.now());
       setCart([]);
       setOrderNote("");
       setStep(1);

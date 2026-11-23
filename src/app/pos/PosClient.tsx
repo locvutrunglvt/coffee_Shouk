@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatDateTimeVN, formatMoney } from "@/lib/format";
+import { formatDateTimeVN, formatMoney, getLocalTodayStartIso } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
 import { localizeName, translateText } from "@/lib/i18n/catalogTranslator";
 import { PaymentQrCard } from "@/components/PaymentQrCard";
 import {
   deductStockAndSyncShift,
+  reverseStockAndShift,
   type CartItemInput,
   type CartTopping,
 } from "@/lib/posActions";
@@ -49,6 +50,7 @@ interface RecentOrderRow {
   payment_status: "paid" | "unpaid";
   created_at: string;
   table_id: string | null;
+  shift_id?: string | null;
   dining_tables: { name: string } | null;
   order_items: {
     product_id: string | null;
@@ -103,6 +105,7 @@ export function PosClient({
   const [cashReceived, setCashReceived] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastError, setToastError] = useState<string | null>(null);
   const [recentOrders, setRecentOrders] =
     useState<RecentOrderRow[]>(initialRecentOrders);
 
@@ -211,14 +214,13 @@ export function PosClient({
 
   async function refreshRecentOrders() {
     const supabase = createClient();
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    const todayStartIso = getLocalTodayStartIso();
     const { data } = await supabase
       .from("orders")
       .select(
-        "id, order_number, order_type, status, total_amount, payment_method, payment_status, created_at, table_id, dining_tables(name), order_items(product_id, variant_id, product_name, variant_name, quantity, unit_price, toppings_json, line_total, note)"
+        "id, order_number, order_type, status, total_amount, payment_method, payment_status, created_at, table_id, shift_id, dining_tables(name), order_items(product_id, variant_id, product_name, variant_name, quantity, unit_price, toppings_json, line_total, note)"
       )
-      .gte("created_at", todayStart.toISOString())
+      .gte("created_at", todayStartIso)
       .order("created_at", { ascending: false })
       .limit(15);
     if (data) setRecentOrders(data as unknown as RecentOrderRow[]);
@@ -228,61 +230,119 @@ export function PosClient({
     if (cart.length === 0 || submitting) return;
     setSubmitting(true);
     setToast(null);
+    setToastError(null);
     try {
       const supabase = createClient();
-      const { data: createdOrder, error: orderErr } = await supabase
-        .from("orders")
-        .insert({
-          shift_id: openShiftId,
-          table_id: orderType === "dine_in" && tableId ? tableId : null,
-          order_type: orderType,
-          status: "pending",
-          subtotal,
-          discount_amount: discountNum,
-          discount_reason: discountReason.trim(),
-          total_amount: totalDue,
-          payment_method: paymentMethod,
-          payment_status: markAsPaid ? "paid" : "unpaid",
-          cash_received: markAsPaid && paymentMethod === "cash" ? cashReceivedNum || totalDue : 0,
-          cash_change: markAsPaid && paymentMethod === "cash" ? cashChange : 0,
-          note: orderNote.trim(),
-          created_by: profile.id,
-        })
-        .select("id, order_number")
-        .single();
+      const targetTableId = orderType === "dine_in" && tableId ? tableId : null;
+      const rpcItems = cart.map((i) => ({
+        product_id: i.productId,
+        variant_id: i.variantId,
+        topping_ids: i.toppings.map((tp) => tp.id),
+        quantity: i.quantity,
+        note: i.note,
+      }));
 
-      if (orderErr || !createdOrder) throw orderErr;
+      let createdOrderId: string | null = null;
+      let createdOrderNumber = 0;
+      let finalTotalDue = totalDue;
 
-      const itemsPayload = cart.map((item) => {
-        const toppingsTotal = item.toppings.reduce((s, tp) => s + tp.price, 0);
-        return {
-          order_id: createdOrder.id,
-          product_id: item.productId,
-          variant_id: item.variantId,
-          product_name: item.productName,
-          variant_name: item.variantName,
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          toppings_json: item.toppings,
-          toppings_total: toppingsTotal,
-          line_total: (item.unitPrice + toppingsTotal) * item.quantity,
-          note: item.note,
-          status: "pending",
+      // Prefer server-verified pricing RPC when migration_production_hardening.sql is installed
+      const { data: rpcData, error: rpcErr } = await supabase.rpc(
+        "submit_pos_order",
+        {
+          p_shift_id: openShiftId,
+          p_table_id: targetTableId,
+          p_order_type: orderType,
+          p_payment_method: paymentMethod,
+          p_payment_status: markAsPaid ? "paid" : "unpaid",
+          p_discount_amount: discountNum,
+          p_discount_reason: discountReason.trim(),
+          p_cash_received:
+            markAsPaid && paymentMethod === "cash" ? cashReceivedNum || totalDue : 0,
+          p_note: orderNote.trim(),
+          p_items: rpcItems,
+        }
+      );
+
+      if (!rpcErr && rpcData) {
+        const res = rpcData as {
+          order_id: string;
+          order_number: number;
+          total_amount: number;
         };
-      });
+        createdOrderId = res.order_id;
+        createdOrderNumber = Number(res.order_number);
+        finalTotalDue = Number(res.total_amount);
+      } else {
+        const errCode = (rpcErr as { code?: string; message?: string } | null)?.code;
+        const errMsg = (rpcErr as { message?: string } | null)?.message ?? "";
+        const missingRpc =
+          errCode === "PGRST202" ||
+          errCode === "42883" ||
+          errMsg.includes("submit_pos_order");
 
-      const { error: itemsErr } = await supabase
-        .from("order_items")
-        .insert(itemsPayload);
-      if (itemsErr) throw itemsErr;
+        if (!missingRpc) {
+          throw rpcErr;
+        }
 
-      if (markAsPaid) {
+        const { data: createdOrder, error: orderErr } = await supabase
+          .from("orders")
+          .insert({
+            shift_id: openShiftId,
+            table_id: targetTableId,
+            order_type: orderType,
+            status: "pending",
+            subtotal,
+            discount_amount: discountNum,
+            discount_reason: discountReason.trim(),
+            total_amount: totalDue,
+            payment_method: paymentMethod,
+            payment_status: markAsPaid ? "paid" : "unpaid",
+            cash_received:
+              markAsPaid && paymentMethod === "cash" ? cashReceivedNum || totalDue : 0,
+            cash_change: markAsPaid && paymentMethod === "cash" ? cashChange : 0,
+            note: orderNote.trim(),
+            created_by: profile.id,
+          })
+          .select("id, order_number")
+          .single();
+
+        if (orderErr || !createdOrder) throw orderErr;
+
+        createdOrderId = createdOrder.id;
+        createdOrderNumber = createdOrder.order_number;
+
+        const itemsPayload = cart.map((item) => {
+          const toppingsTotal = item.toppings.reduce((s, tp) => s + tp.price, 0);
+          return {
+            order_id: createdOrder.id,
+            product_id: item.productId,
+            variant_id: item.variantId,
+            product_name: item.productName,
+            variant_name: item.variantName,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            toppings_json: item.toppings,
+            toppings_total: toppingsTotal,
+            line_total: (item.unitPrice + toppingsTotal) * item.quantity,
+            note: item.note,
+            status: "pending",
+          };
+        });
+
+        const { error: itemsErr } = await supabase
+          .from("order_items")
+          .insert(itemsPayload);
+        if (itemsErr) throw itemsErr;
+      }
+
+      if (markAsPaid && createdOrderId) {
         await deductStockAndSyncShift(supabase, {
-          orderId: createdOrder.id,
-          orderNumber: createdOrder.order_number,
+          orderId: createdOrderId,
+          orderNumber: createdOrderNumber,
           items: cart,
           paymentMethod,
-          totalAmount: totalDue,
+          totalAmount: finalTotalDue,
           shiftId: openShiftId,
           userId: profile.id,
         });
@@ -293,8 +353,10 @@ export function PosClient({
       setDiscountReason("");
       setOrderNote("");
       setCashReceived("");
-      setToast(`${t.pos.orderCreatedMsg} (#${createdOrder.order_number})`);
+      setToast(`${t.pos.orderCreatedMsg} (#${createdOrderNumber})`);
       await refreshRecentOrders();
+    } catch {
+      setToastError(t.pos.orderCreateError);
     } finally {
       setSubmitting(false);
     }
@@ -303,18 +365,26 @@ export function PosClient({
   async function handleConfirmCollect() {
     if (!collectingOrder || collectingBusy) return;
     setCollectingBusy(true);
+    setToastError(null);
     try {
       const supabase = createClient();
-      const { error } = await supabase
+      // Conditional update ensures two cashiers cannot collect & deduct the same order twice
+      const { data: updatedRow, error } = await supabase
         .from("orders")
         .update({
           payment_status: "paid",
           payment_method: collectMethod,
           shift_id: openShiftId,
         })
-        .eq("id", collectingOrder.id);
+        .eq("id", collectingOrder.id)
+        .eq("payment_status", "unpaid")
+        .neq("status", "cancelled")
+        .select("id")
+        .maybeSingle();
 
-      if (!error) {
+      if (error) throw error;
+
+      if (updatedRow) {
         const mappedItems: CartItemInput[] = (collectingOrder.order_items ?? [])
           .filter((i) => i.product_id)
           .map((i) => ({
@@ -337,10 +407,12 @@ export function PosClient({
           shiftId: openShiftId,
           userId: profile.id,
         });
-
-        setCollectingOrder(null);
-        await refreshRecentOrders();
       }
+
+      setCollectingOrder(null);
+      await refreshRecentOrders();
+    } catch {
+      setToastError(t.common.error);
     } finally {
       setCollectingBusy(false);
     }
@@ -348,31 +420,88 @@ export function PosClient({
 
   async function handleCancelOrder(order: RecentOrderRow) {
     if (order.payment_status === "paid" && !canCancelPaid) {
-      setToast(t.pos.onlyAdminCancelPaid);
+      setToastError(t.pos.onlyAdminCancelPaid);
       return;
     }
     const reason = window.prompt(t.pos.cancelReasonPrompt);
     if (reason === null) return;
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        status: "cancelled",
-        cancelled_by: profile.id,
-        cancel_reason: reason.trim(),
-      })
-      .eq("id", order.id);
-
-    if (!error) {
-      await supabase.from("audit_logs").insert({
-        actor_id: profile.id,
-        action: "cancel_order",
-        entity_type: "orders",
-        entity_id: order.id,
-        details: { order_number: order.order_number, reason: reason.trim() },
+    setToast(null);
+    setToastError(null);
+    try {
+      const supabase = createClient();
+      const { error: rpcErr } = await supabase.rpc("cancel_order_atomic", {
+        p_order_id: order.id,
+        p_reason: reason.trim(),
       });
+
+      if (rpcErr) {
+        const errCode = (rpcErr as { code?: string }).code;
+        const errMsg = rpcErr.message ?? "";
+        const missingRpc =
+          errCode === "PGRST202" ||
+          errCode === "42883" ||
+          errMsg.includes("cancel_order_atomic");
+
+        if (!missingRpc) throw rpcErr;
+
+        // Fallback when migration_production_hardening.sql is not yet applied
+        const { data: cancelledRow, error } = await supabase
+          .from("orders")
+          .update({
+            status: "cancelled",
+            cancelled_by: profile.id,
+            cancel_reason: reason.trim(),
+          })
+          .eq("id", order.id)
+          .neq("status", "cancelled")
+          .select("id")
+          .maybeSingle();
+
+        if (error) throw error;
+        if (cancelledRow) {
+          if (order.payment_status === "paid") {
+            const mappedItems: CartItemInput[] = (order.order_items ?? [])
+              .filter((i) => i.product_id)
+              .map((i) => ({
+                productId: i.product_id!,
+                variantId: i.variant_id,
+                productName: i.product_name,
+                variantName: i.variant_name,
+                quantity: i.quantity,
+                unitPrice: Number(i.unit_price),
+                toppings: Array.isArray(i.toppings_json) ? i.toppings_json : [],
+                note: i.note,
+              }));
+            await reverseStockAndShift(supabase, {
+              orderId: order.id,
+              orderNumber: order.order_number,
+              items: mappedItems,
+              paymentMethod: order.payment_method,
+              totalAmount: Number(order.total_amount),
+              shiftId: order.shift_id ?? openShiftId,
+              userId: profile.id,
+            });
+          }
+
+          await supabase.from("audit_logs").insert({
+            actor_id: profile.id,
+            action: "cancel_order",
+            entity_type: "orders",
+            entity_id: order.id,
+            details: {
+              order_number: order.order_number,
+              payment_status: order.payment_status,
+              reason: reason.trim(),
+            },
+          });
+        }
+      }
+
+      setToast(`${t.pos.orderCancelledMsg} (#${order.order_number})`);
       await refreshRecentOrders();
+    } catch {
+      setToastError(t.common.error);
     }
   }
 
@@ -472,6 +601,13 @@ export function PosClient({
         <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{toast}</span>
+        </div>
+      )}
+
+      {toastError && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{toastError}</span>
         </div>
       )}
 

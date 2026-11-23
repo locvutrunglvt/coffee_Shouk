@@ -3,6 +3,7 @@ import { ModuleGuide } from "@/components/ModuleGuide";
 import { requireRouteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getServerI18n } from "@/lib/i18n/server";
+import { getLocalCurrentMonthStr } from "@/lib/format";
 import { computeMonthlyPnL } from "@/lib/pnl";
 import { ReportsClient } from "./ReportsClient";
 
@@ -16,7 +17,7 @@ export default async function ReportsPage({
   const currentMonth =
     params.month && /^\d{4}-\d{2}$/.test(params.month)
       ? params.month
-      : new Date().toISOString().slice(0, 7);
+      : getLocalCurrentMonthStr();
 
   const [{ profile, settings }, { t }, summary] = await Promise.all([
     requireRouteAccess("/reports"),

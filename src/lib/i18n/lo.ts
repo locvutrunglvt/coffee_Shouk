@@ -190,6 +190,8 @@ export const lo: Dictionary = {
     qrScanHint: "ລູກຄ້າສະແກນ QR ຫຼື ໂອນຕາມບັນຊີຮ້ານ",
     noQrConfigured: "ຍັງບໍ່ໄດ້ຕັ້ງຮູບ QR ໃນໜ້າຕັ້ງຄ່າ.",
     orderCreatedMsg: "ສ້າງອໍເດີສຳເລັດແລ້ວ!",
+    orderCreateError: "ບໍ່ສາມາດສ້າງອໍເດີໄດ້. ກະລຸນາກວດສອບອິນເຕີເນັດແລ້ວລອງໃໝ່.",
+    orderCancelledMsg: "ຍົກເລີກບິນ ແລະ ອັບເດດຍອດແລ້ວ.",
     recentOrders: "ບິນຫຼ້າສຸດມື້ນີ້",
     collectPayment: "ເກັບເງິນ",
     cancelOrder: "ຍົກເລີກບິນ",
@@ -494,6 +496,7 @@ export const lo: Dictionary = {
     deliveryAddress: "ທີ່ຢູ່ຈັດສົ່ງ",
     orderSummaryTitle: "ລາຍລະອຽດອໍເດີ",
     payAtCounterOption: "ຊຳລະຢູ່ເຄົາເຕີ (ເງິນສົດ)",
+    rateLimitMsg: "ທ່ານຫາກໍສົ່ງອໍເດີໄປແລ້ວ. ກະລຸນາລໍຖ້າຈັກໜ່ອຍກ່ອນສົ່ງອໍເດີໃໝ່.",
   },
   guides: {
     toggleOpen: "ເບິ່ງຄູ່ມືແນະນຳລະອຽດ",

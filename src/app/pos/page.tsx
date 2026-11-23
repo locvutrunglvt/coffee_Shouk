@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppShell";
 import { ModuleGuide } from "@/components/ModuleGuide";
 import { requireRouteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getLocalTodayStartIso } from "@/lib/format";
 import { getServerI18n } from "@/lib/i18n/server";
 import { PosClient } from "./PosClient";
 import type {
@@ -15,8 +16,7 @@ import type {
 export default async function PosPage() {
   const supabase = await createClient();
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStartIso = getLocalTodayStartIso();
 
   const [
     { profile, settings },
@@ -75,9 +75,9 @@ export default async function PosPage() {
       ? supabase
           .from("orders")
           .select(
-            "id, order_number, order_type, status, total_amount, payment_method, payment_status, created_at, table_id, dining_tables(name), order_items(product_id, variant_id, product_name, variant_name, quantity, unit_price, toppings_json, line_total, note)"
+            "id, order_number, order_type, status, total_amount, payment_method, payment_status, created_at, table_id, shift_id, dining_tables(name), order_items(product_id, variant_id, product_name, variant_name, quantity, unit_price, toppings_json, line_total, note)"
           )
-          .gte("created_at", todayStart.toISOString())
+          .gte("created_at", todayStartIso)
           .order("created_at", { ascending: false })
           .limit(15)
       : Promise.resolve({ data: [] }),

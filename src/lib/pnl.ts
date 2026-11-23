@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getLocalMonthBoundsIso } from "./format";
 import type { ExpenseGroup } from "./types";
 
 export interface PnLSummary {
@@ -63,9 +64,7 @@ export async function computeMonthlyPnL(
   supabase: SupabaseClient,
   month: string
 ): Promise<PnLSummary> {
-  const [yearNum, monthNum] = month.split("-").map(Number);
-  const startDate = new Date(yearNum, monthNum - 1, 1, 0, 0, 0, 0);
-  const endDate = new Date(yearNum, monthNum, 1, 0, 0, 0, 0);
+  const { startIso, endIso } = getLocalMonthBoundsIso(month);
 
   const [ordersRes, expensesRes, movementsRes] = await Promise.all([
     supabase
@@ -73,8 +72,8 @@ export async function computeMonthlyPnL(
       .select(
         "id, order_number, created_at, total_amount, payment_method, payment_status, status, order_items(product_name, quantity, line_total)"
       )
-      .gte("created_at", startDate.toISOString())
-      .lt("created_at", endDate.toISOString())
+      .gte("created_at", startIso)
+      .lt("created_at", endIso)
       .eq("payment_status", "paid")
       .neq("status", "cancelled")
       .order("created_at", { ascending: true }),
@@ -89,8 +88,8 @@ export async function computeMonthlyPnL(
       .select(
         "created_at, movement_type, quantity_change, unit_cost, ingredients(name)"
       )
-      .gte("created_at", startDate.toISOString())
-      .lt("created_at", endDate.toISOString())
+      .gte("created_at", startIso)
+      .lt("created_at", endIso)
       .in("movement_type", ["sale_deduction", "stock_take_adjust", "waste"])
       .order("created_at", { ascending: true }),
   ]);
