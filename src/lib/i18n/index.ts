@@ -15,9 +15,9 @@ export function normalizeLocale(value?: string | null): Locale {
   if (value === "en" || value === "lo" || value === "vi") {
     return value;
   }
-  return "vi";
+  return "lo";
 }
 
 export function getDictionary(locale: Locale): Dictionary {
-  return DICTIONARIES[locale] ?? vi;
+  return DICTIONARIES[locale] ?? lo;
 }
