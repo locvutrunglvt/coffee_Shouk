@@ -88,7 +88,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
           }
           return;
         }
-        if (data.session) {
+        if (data.session && data.user) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("is_active")
+            .eq("id", data.user.id)
+            .maybeSingle();
+
+          if (prof && prof.is_active === false) {
+            await supabase.auth.signOut();
+            setPassword("");
+            setMessage(t.auth.signupPendingApproval);
+            setMode("login");
+            return;
+          }
           router.push("/");
           router.refresh();
         } else {

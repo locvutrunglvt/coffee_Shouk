@@ -35,6 +35,7 @@ export default async function SettingsPage() {
           initialSettings={settings}
           initialProfiles={(allProfiles as UserProfile[] | null) ?? []}
           currentUserId={profile.id}
+          currentUserRole={profile.role}
         />
       </div>
     </AppShell>

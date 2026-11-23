@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDateTimeVN, formatMoney } from "@/lib/format";
 import { useT } from "@/components/I18nProvider";
 import { localizeName } from "@/lib/i18n/catalogTranslator";
+import { isHighAdminRole } from "@/lib/rbac";
 import type { UserProfile } from "@/lib/auth";
 import type { ProductRow, ToppingRow, VariantRow } from "@/app/menu/MenuClient";
 import {
@@ -95,6 +96,7 @@ export function InventoryClient({
   toppings,
 }: InventoryClientProps) {
   const { t, locale } = useT();
+  const canDelete = isHighAdminRole(profile.role);
   const [tab, setTab] = useState<
     "stock" | "import" | "recipes" | "movements" | "suppliers"
   >("stock");
@@ -911,13 +913,15 @@ export function InventoryClient({
                     <span className="text-[#2F6844]">
                       {formatMoney(lineCost, currencyCode)}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => deleteRecipeLine(r.id)}
-                      className="text-red-600 p-1 cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => deleteRecipeLine(r.id)}
+                        className="text-red-600 p-1 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

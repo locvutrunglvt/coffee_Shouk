@@ -13,7 +13,7 @@ import {
 } from "@/lib/i18n/catalogTranslator";
 import { compressAndUploadImage } from "@/lib/uploadImage";
 import { runTestSeed15Drinks } from "@/lib/seedTestData";
-import type { UserRole } from "@/lib/rbac";
+import { isHighAdminRole, type UserRole } from "@/lib/rbac";
 import {
   Coffee,
   Database,
@@ -100,7 +100,7 @@ export function MenuClient({
   initialTables,
 }: MenuClientProps) {
   const { t, locale } = useT();
-  const canEdit = userRole === "admin" || userRole === "manager";
+  const canEdit = isHighAdminRole(userRole);
 
   const [activeTab, setActiveTab] = useState<
     "products" | "categories" | "toppings" | "tables"

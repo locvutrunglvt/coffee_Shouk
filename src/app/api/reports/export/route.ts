@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   if (
     !ctx.isConfigured ||
     !ctx.profile ||
-    !["admin", "manager"].includes(ctx.profile.role)
+    !["developer", "admin", "manager"].includes(ctx.profile.role)
   ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

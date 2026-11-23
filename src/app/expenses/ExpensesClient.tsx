@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/format";
 import { doesExpenseApplyToMonth } from "@/lib/pnl";
 import { useT } from "@/components/I18nProvider";
 import { compressAndUploadImage } from "@/lib/uploadImage";
+import { isHighAdminRole } from "@/lib/rbac";
 import type { UserProfile } from "@/lib/auth";
 import type { ExpenseGroup } from "@/lib/types";
 import {
@@ -72,7 +73,7 @@ export function ExpensesClient({
   initialRecurring,
 }: ExpensesClientProps) {
   const { t } = useT();
-  const isAdmin = profile.role === "admin";
+  const isAdmin = isHighAdminRole(profile.role);
   const [tab, setTab] = useState<"expenses" | "recurring">("expenses");
   const [filterMonth, setFilterMonth] = useState(
     new Date().toISOString().slice(0, 7)

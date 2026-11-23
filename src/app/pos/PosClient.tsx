@@ -14,6 +14,7 @@ import {
   type CartTopping,
 } from "@/lib/posActions";
 import type { ShopSettings, UserProfile } from "@/lib/auth";
+import { isHighAdminRole } from "@/lib/rbac";
 import type { OrderStatus, OrderType, PaymentMethod } from "@/lib/types";
 import type {
   CategoryRow,
@@ -87,7 +88,7 @@ export function PosClient({
 }: PosClientProps) {
   const { t, locale } = useT();
   const canCollectCash = profile.role !== "staff";
-  const canCancel = profile.role === "admin" || profile.role === "manager";
+  const canCancelPaid = isHighAdminRole(profile.role);
 
   const [selectedCat, setSelectedCat] = useState("all");
   const [search, setSearch] = useState("");
@@ -346,7 +347,10 @@ export function PosClient({
   }
 
   async function handleCancelOrder(order: RecentOrderRow) {
-    if (!canCancel) return;
+    if (order.payment_status === "paid" && !canCancelPaid) {
+      setToast(t.pos.onlyAdminCancelPaid);
+      return;
+    }
     const reason = window.prompt(t.pos.cancelReasonPrompt);
     if (reason === null) return;
 
@@ -962,15 +966,16 @@ export function PosClient({
                       >
                         <Printer className="w-3.5 h-3.5" />
                       </button>
-                      {canCancel && o.status !== "cancelled" && (
-                        <button
-                          type="button"
-                          onClick={() => handleCancelOrder(o)}
-                          className="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-medium cursor-pointer"
-                        >
-                          {t.pos.cancelOrder}
-                        </button>
-                      )}
+                      {o.status !== "cancelled" &&
+                        (o.payment_status === "unpaid" || canCancelPaid) && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelOrder(o)}
+                            className="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-medium cursor-pointer"
+                          >
+                            {t.pos.cancelOrder}
+                          </button>
+                        )}
                     </td>
                   </tr>
                 ))}

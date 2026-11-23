@@ -19,6 +19,9 @@ import {
   Menu,
   X,
   Sprout,
+  KeyRound,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_ITEMS, ROLE_STYLE, type NavItem } from "@/lib/rbac";
@@ -52,6 +55,43 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [pwModalOpen, setPwModalOpen] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwFeedback, setPwFeedback] = useState<{
+    type: "ok" | "err";
+    text: string;
+  } | null>(null);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwFeedback(null);
+    if (newPw.length < 6) {
+      setPwFeedback({ type: "err", text: t.auth.passwordTooShort });
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setPwFeedback({ type: "err", text: t.auth.passwordMismatch });
+      return;
+    }
+    setPwSaving(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password: newPw });
+      if (error) {
+        setPwFeedback({ type: "err", text: error.message });
+      } else {
+        setPwFeedback({ type: "ok", text: t.auth.passwordChanged });
+        setNewPw("");
+        setConfirmPw("");
+      }
+    } catch {
+      setPwFeedback({ type: "err", text: t.auth.errNetwork });
+    } finally {
+      setPwSaving(false);
+    }
+  }
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(profile.role));
   const bottomNavItems = visibleItems.filter((item) => item.mobilePrimary).slice(0, 4);
@@ -154,15 +194,32 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer disabled:opacity-60"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>{signingOut ? t.nav.signingOut : t.nav.signOut}</span>
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPwFeedback(null);
+                setNewPw("");
+                setConfirmPw("");
+                setPwModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl text-xs font-bold text-[#14532D] bg-white hover:bg-[#EAFBF0] border border-[#CDE9D5] transition-colors cursor-pointer"
+            >
+              <KeyRound className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{t.auth.changePasswordBtn}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">
+                {signingOut ? t.nav.signingOut : t.nav.signOut}
+              </span>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -253,7 +310,21 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
                 );
               })}
             </nav>
-            <div className="p-3 border-t border-[#DDF3E4]">
+            <div className="p-3 border-t border-[#DDF3E4] space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setPwFeedback(null);
+                  setNewPw("");
+                  setConfirmPw("");
+                  setPwModalOpen(true);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-[#14532D] bg-[#EAFBF0] border border-[#CDE9D5]"
+              >
+                <KeyRound className="w-4 h-4" />
+                <span>{t.auth.changePasswordBtn}</span>
+              </button>
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -313,6 +384,94 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
           <span className="text-[11px] mt-0.5">{t.nav.more}</span>
         </button>
       </nav>
+
+      {/* Change Password Modal */}
+      {pwModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleChangePassword}
+            className="card-3d rounded-3xl w-full max-w-sm p-5 space-y-4 bg-white"
+          >
+            <div className="flex items-center justify-between border-b border-[#DDF3E4] pb-3">
+              <div className="flex items-center gap-2 font-extrabold text-[#14532D]">
+                <KeyRound className="w-4 h-4 text-[#16A34A]" />
+                <h3>{t.auth.changePasswordTitle}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPwModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-[#EAFBF0] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {pwFeedback && (
+              <div
+                className={`flex items-start gap-2 p-2.5 rounded-xl text-xs border ${
+                  pwFeedback.type === "ok"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-red-50 border-red-200 text-red-800"
+                }`}
+              >
+                {pwFeedback.type === "ok" ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                )}
+                <span>{pwFeedback.text}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-[#14532D] mb-1">
+                {t.auth.newPassword}
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={newPw}
+                onChange={(e) => setNewPw(e.target.value)}
+                placeholder={t.auth.passwordPlaceholder}
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#14532D] mb-1">
+                {t.auth.confirmPassword}
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirmPw}
+                onChange={(e) => setConfirmPw(e.target.value)}
+                placeholder={t.auth.passwordPlaceholder}
+                className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setPwModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-[#CDE9D5] text-sm font-semibold cursor-pointer"
+              >
+                {t.common.close}
+              </button>
+              <button
+                type="submit"
+                disabled={pwSaving}
+                className="px-4 py-2 rounded-xl btn-3d-green text-sm font-bold cursor-pointer disabled:opacity-60"
+              >
+                {pwSaving ? t.common.saving : t.common.save}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

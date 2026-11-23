@@ -3,11 +3,19 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient as createRawSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 import { CURRENCIES, type CurrencyCode } from "@/lib/format";
 import { VIETQR_BANKS } from "@/lib/emvcoQr";
 import { decodeQrFromFile } from "@/lib/decodeQrClient";
-import { type UserRole } from "@/lib/rbac";
+import {
+  assignableRolesFor,
+  canManageUser,
+  ROLE_ORDER,
+  ROLE_STYLE,
+  type UserRole,
+} from "@/lib/rbac";
 import type { ShopSettings, UserProfile } from "@/lib/auth";
 import { useT } from "@/components/I18nProvider";
 import { compressAndUploadImage } from "@/lib/uploadImage";
@@ -16,7 +24,9 @@ import {
   CheckCircle2,
   Database,
   Save,
+  ShieldCheck,
   Store,
+  UserPlus,
   Users,
   AlertCircle,
   Upload,
@@ -27,14 +37,14 @@ interface SettingsClientProps {
   initialSettings: ShopSettings;
   initialProfiles: UserProfile[];
   currentUserId: string;
+  currentUserRole: UserRole;
 }
-
-const ROLES: UserRole[] = ["admin", "manager", "cashier", "staff", "barista"];
 
 export function SettingsClient({
   initialSettings,
   initialProfiles,
   currentUserId,
+  currentUserRole,
 }: SettingsClientProps) {
   const router = useRouter();
   const { t } = useT();
@@ -54,6 +64,18 @@ export function SettingsClient({
   const [notice, setNotice] = useState<{ type: "ok" | "err"; text: string } | null>(
     null
   );
+
+  // Create staff account form
+  const assignableRoles = assignableRolesFor(currentUserRole);
+  const [newFullName, setNewFullName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState<UserRole>(
+    assignableRoles.includes("manager")
+      ? "manager"
+      : assignableRoles[0] ?? "staff"
+  );
+  const [creatingStaff, setCreatingStaff] = useState(false);
 
   async function handleQrFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -152,15 +174,51 @@ export function SettingsClient({
     }
   }
 
+  async function demoteExistingAdminIfNeeded(
+    supabase: ReturnType<typeof createClient>,
+    excludeUserId: string
+  ): Promise<boolean> {
+    const existingAdmin = profiles.find(
+      (p) => p.role === "admin" && p.id !== excludeUserId
+    );
+    if (!existingAdmin) return true;
+    if (!window.confirm(t.settings.confirmReplaceAdmin)) {
+      return false;
+    }
+    const { error: demoteErr } = await supabase
+      .from("profiles")
+      .update({ role: "manager", updated_at: new Date().toISOString() })
+      .eq("id", existingAdmin.id);
+    if (demoteErr) throw demoteErr;
+
+    setProfiles((prev) =>
+      prev.map((p) =>
+        p.id === existingAdmin.id ? { ...p, role: "manager" } : p
+      )
+    );
+    return true;
+  }
+
   async function handleUpdateRole(
     userId: string,
     role: UserRole,
     isActive: boolean
   ) {
+    const target = profiles.find((p) => p.id === userId);
+    if (!target || !canManageUser(currentUserRole, currentUserId, target)) {
+      return;
+    }
+    if (!assignableRoles.includes(role)) return;
+
     setSavingUserId(userId);
     setNotice(null);
     try {
       const supabase = createClient();
+      if (role === "admin") {
+        const ok = await demoteExistingAdminIfNeeded(supabase, userId);
+        if (!ok) return;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update({ role, is_active: isActive, updated_at: new Date().toISOString() })
@@ -177,6 +235,126 @@ export function SettingsClient({
       setSavingUserId(null);
     }
   }
+
+  async function handleCreateStaff(e: React.FormEvent) {
+    e.preventDefault();
+    if (creatingStaff || !assignableRoles.includes(newRole)) return;
+    if (newPassword.length < 6) {
+      setNotice({ type: "err", text: t.auth.passwordTooShort });
+      return;
+    }
+
+    setCreatingStaff(true);
+    setNotice(null);
+    try {
+      const { url, anonKey, isConfigured } = getSupabaseEnv();
+      if (!isConfigured) throw new Error("Not configured");
+
+      const supabase = createClient();
+      if (newRole === "admin") {
+        const ok = await demoteExistingAdminIfNeeded(supabase, "");
+        if (!ok) return;
+      }
+
+      // Isolated non-persisted client so current manager session is NOT replaced
+      const isolatedClient = createRawSupabaseClient(url, anonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+      });
+
+      const trimmedEmail = newEmail.trim().toLowerCase();
+      const trimmedName = newFullName.trim() || trimmedEmail.split("@")[0];
+
+      const { data, error: signUpErr } = await isolatedClient.auth.signUp({
+        email: trimmedEmail,
+        password: newPassword,
+        options: {
+          data: {
+            full_name: trimmedName,
+          },
+        },
+      });
+
+      if (signUpErr) {
+        if (signUpErr.message.toLowerCase().includes("already registered")) {
+          setNotice({ type: "err", text: t.settings.staffEmailExists });
+        } else {
+          setNotice({ type: "err", text: signUpErr.message });
+        }
+        return;
+      }
+
+      if (
+        data.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      ) {
+        setNotice({ type: "err", text: t.settings.staffEmailExists });
+        return;
+      }
+
+      const createdUser = data.user;
+      if (!createdUser) {
+        setNotice({ type: "err", text: t.settings.roleError });
+        return;
+      }
+
+      // Immediately set intended role + active status using authenticated admin/developer session
+      const { data: updatedProf, error: profErr } = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: createdUser.id,
+            full_name: trimmedName,
+            email: trimmedEmail,
+            role: newRole,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        )
+        .select("id, full_name, email, phone, role, is_active")
+        .single();
+
+      if (profErr) throw profErr;
+
+      setProfiles((prev) => {
+        const exists = prev.some((x) => x.id === createdUser.id);
+        const row = (updatedProf as UserProfile) ?? {
+          id: createdUser.id,
+          full_name: trimmedName,
+          email: trimmedEmail,
+          phone: "",
+          role: newRole,
+          is_active: true,
+        };
+        return exists
+          ? prev.map((x) => (x.id === createdUser.id ? row : x))
+          : [...prev, row];
+      });
+
+      setNewFullName("");
+      setNewEmail("");
+      setNewPassword("");
+      setNotice({
+        type: "ok",
+        text: data.session
+          ? t.settings.staffCreatedOk
+          : t.settings.staffCreatedConfirmEmail,
+      });
+    } catch {
+      setNotice({ type: "err", text: t.settings.roleError });
+    } finally {
+      setCreatingStaff(false);
+    }
+  }
+
+  const sortedProfiles = [...profiles].sort(
+    (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
+  );
 
   return (
     <div className="space-y-6">
@@ -480,6 +658,94 @@ export function SettingsClient({
         </button>
       </div>
 
+      {/* Create New Staff / Admin Account */}
+      <form
+        onSubmit={handleCreateStaff}
+        className="card-3d rounded-2xl p-5 space-y-4 bg-white"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-[#14532D] font-bold">
+            <UserPlus className="w-5 h-5 text-[#15803D]" />
+            <h2>{t.settings.createStaffTitle}</h2>
+          </div>
+          <span className="text-xs font-semibold text-[#15803D] bg-[#EAFBF0] border border-[#CDE9D5] px-2.5 py-1 rounded-full">
+            {t.settings.onlyOneAdminNote}
+          </span>
+        </div>
+        <p className="text-xs text-[#2F6844]">{t.settings.createStaffHint}</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-bold text-[#14532D] mb-1">
+              {t.auth.fullName}
+            </label>
+            <input
+              type="text"
+              required
+              value={newFullName}
+              onChange={(e) => setNewFullName(e.target.value)}
+              placeholder={t.auth.fullNamePlaceholder}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#14532D] mb-1">
+              {t.auth.email}
+            </label>
+            <input
+              type="email"
+              required
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder={t.auth.emailPlaceholder}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#14532D] mb-1">
+              {t.settings.staffPassword}
+            </label>
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t.auth.passwordPlaceholder}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#14532D] mb-1">
+              {t.settings.colRole}
+            </label>
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value as UserRole)}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-[#CDE9D5] bg-white"
+            >
+              {assignableRoles.map((r) => (
+                <option key={r} value={r}>
+                  {t.roles[r]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={creatingStaff}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl btn-3d-green text-sm font-bold cursor-pointer disabled:opacity-60"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>
+            {creatingStaff ? t.settings.creatingStaff : t.settings.createStaffBtn}
+          </span>
+        </button>
+      </form>
+
+      {/* Staff Permissions Table */}
       <div className="card-3d rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 text-[#14532D] font-bold">
@@ -502,8 +768,15 @@ export function SettingsClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#DDF3E4]">
-              {profiles.map((p) => {
+              {sortedProfiles.map((p) => {
                 const isSelf = p.id === currentUserId;
+                const manageable = canManageUser(
+                  currentUserRole,
+                  currentUserId,
+                  p
+                );
+                const roleBadge = ROLE_STYLE[p.role]?.badgeClass ?? "";
+
                 return (
                   <tr key={p.id}>
                     <td className="py-3 pr-4 font-medium">
@@ -516,37 +789,60 @@ export function SettingsClient({
                     </td>
                     <td className="py-3 pr-4 text-xs text-[#2F6844]">{p.email}</td>
                     <td className="py-3 pr-4">
-                      <select
-                        disabled={isSelf || savingUserId === p.id}
-                        value={p.role}
-                        onChange={(e) =>
-                          handleUpdateRole(
-                            p.id,
-                            e.target.value as UserRole,
-                            p.is_active
-                          )
-                        }
-                        className="px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white disabled:opacity-60"
-                      >
-                        {ROLES.map((r) => (
-                          <option key={r} value={r}>
-                            {t.roles[r]}
-                          </option>
-                        ))}
-                      </select>
+                      {manageable ? (
+                        <select
+                          disabled={savingUserId === p.id}
+                          value={p.role}
+                          onChange={(e) =>
+                            handleUpdateRole(
+                              p.id,
+                              e.target.value as UserRole,
+                              p.is_active
+                            )
+                          }
+                          className="px-2.5 py-1.5 text-xs rounded-lg border border-[#CDE9D5] bg-white disabled:opacity-60"
+                        >
+                          {assignableRoles.map((r) => (
+                            <option key={r} value={r}>
+                              {t.roles[r]}
+                            </option>
+                          ))}
+                          {!assignableRoles.includes(p.role) && (
+                            <option value={p.role}>{t.roles[p.role]}</option>
+                          )}
+                        </select>
+                      ) : (
+                        <span
+                          title={
+                            p.role === "developer"
+                              ? t.settings.roleDeveloperLocked
+                              : t.settings.cannotManageHigher
+                          }
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${roleBadge}`}
+                        >
+                          {p.role === "developer" && (
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                          )}
+                          <span>{t.roles[p.role]}</span>
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 pr-4">
                       <button
                         type="button"
-                        disabled={isSelf || savingUserId === p.id}
+                        disabled={!manageable || savingUserId === p.id}
                         onClick={() => handleUpdateRole(p.id, p.role, !p.is_active)}
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium border cursor-pointer disabled:opacity-60 ${
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium border cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed ${
                           p.is_active
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-red-50 text-red-700 border-red-200"
+                            : "bg-amber-50 text-amber-800 border-amber-300 font-bold"
                         }`}
                       >
-                        {p.is_active ? t.common.active : t.common.locked}
+                        {p.is_active
+                          ? t.common.active
+                          : manageable
+                          ? t.settings.approveBtn
+                          : t.settings.pendingBadge}
                       </button>
                     </td>
                   </tr>
