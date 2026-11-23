@@ -622,5 +622,11 @@ export const lo: Dictionary = {
     quickPromptPos: "ເກັບເງິນ, ຍົກເລີກບິນ & QR?",
     quickPromptPnl: "ຄ່າໃຊ້ຈ່າຍ & ກຳໄລເດືອນນີ້?",
     quickPromptGuide: "AI ແນະນຳໜ້ານີ້",
+    quickPromptBar: "ຄິວບາ & ເມນູໝົດຊົ່ວຄາວ?",
+    quickPromptMenu: "ຈັດການເມນູ, Size & QR ໂຕະ?",
+    quickPromptStockTake: "ກວດນັບສາງ & ສ່ວນຕ່າງ?",
+    quickPromptRbac: "ແບ່ງສິດພະນັກງານ & ອະນຸມັດ?",
+    quickPromptPwa: "ຕິດຕັ້ງ PWA & ໃຊ້ຍາມເນັດອ່ອນ?",
+    roleScopedNote: "ຕອບຕາມສິດຜູ້ໃຊ້",
   },
 };

@@ -28,6 +28,7 @@ import { NAV_ITEMS, ROLE_STYLE, type NavItem } from "@/lib/rbac";
 import type { ShopSettings, UserProfile } from "@/lib/auth";
 import { useT } from "@/components/I18nProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { SessionProvider } from "@/components/SessionContext";
 
 const ICON_MAP: Record<NavItem["iconName"], React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -124,7 +125,8 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row text-[#143321]">
+    <SessionProvider profile={profile} settings={settings}>
+      <div className="min-h-screen flex flex-col md:flex-row text-[#143321]">
       {/* Instant top navigation bar */}
       {isNavigating && (
         <div className="fixed top-0 inset-x-0 h-1 bg-gradient-to-r from-[#22C55E] via-[#84CC16] to-[#16A34A] animate-pulse z-50" />
@@ -472,6 +474,7 @@ export function AppShell({ profile, settings, children }: AppShellProps) {
           </form>
         </div>
       )}
-    </div>
+      </div>
+    </SessionProvider>
   );
 }

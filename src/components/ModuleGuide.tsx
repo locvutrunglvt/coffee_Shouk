@@ -8,11 +8,14 @@ import {
   RefreshCw,
   Send,
   Settings2,
+  ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
 import { useT } from "@/components/I18nProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAppSession } from "@/components/SessionContext";
+import { ROLE_STYLE, type UserRole } from "@/lib/rbac";
 import {
   answerTaOiQuestion,
   buildWelcomeGuideMessage,
@@ -41,7 +44,12 @@ function nextMessageId(prefix: string): string {
 
 export function ModuleGuide({ guideKey }: ModuleGuideProps) {
   const { t, locale } = useT();
+  const session = useAppSession();
+  const userRole: UserRole = session?.profile.role ?? "staff";
+  const shopName = session?.settings.shop_name ?? "Ta Oi Coffee";
+  const currencyCode = session?.settings.currency_code ?? "LAK";
   const guide = t.guides[guideKey];
+  const roleBadgeStyle = ROLE_STYLE[userRole]?.badgeClass ?? "";
 
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"chat" | "guide">("chat");
@@ -66,16 +74,25 @@ export function ModuleGuide({ guideKey }: ModuleGuideProps) {
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  const quickQuestions = useMemo(() => getTaOiQuickQuestions(t), [t]);
+  const quickQuestions = useMemo(
+    () => getTaOiQuickQuestions(t, userRole),
+    [t, userRole]
+  );
   const welcomeText = useMemo(
-    () => buildWelcomeGuideMessage(liveCtx, locale, guideKey, t),
-    [liveCtx, locale, guideKey, t]
+    () =>
+      buildWelcomeGuideMessage(liveCtx, locale, guideKey, t, userRole),
+    [liveCtx, locale, guideKey, t, userRole]
   );
 
   async function refreshLiveContext(): Promise<TaOiLiveContext> {
     setLoadingCtx(true);
     try {
-      const ctx = await fetchTaOiLiveContext(locale);
+      const ctx = await fetchTaOiLiveContext(
+        locale,
+        userRole,
+        shopName,
+        currencyCode
+      );
       setLiveCtx(ctx);
       return ctx;
     } finally {
@@ -141,6 +158,7 @@ export function ModuleGuide({ guideKey }: ModuleGuideProps) {
           question: q,
           locale,
           guideKey,
+          role: userRole,
           context: activeCtx,
         }),
       });
@@ -224,7 +242,7 @@ export function ModuleGuide({ guideKey }: ModuleGuideProps) {
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="w-full sm:max-w-xl h-[86vh] sm:h-[82vh] sm:max-h-[680px] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-[#86EFAC] bg-[#F4FDF7] shadow-2xl overflow-hidden">
+          <div className="w-full sm:max-w-xl h-[86vh] sm:h-[82vh] sm:max-h-[700px] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-[#86EFAC] bg-[#F4FDF7] shadow-2xl overflow-hidden">
             {/* Popup Header */}
             <div className="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-[#15803D] to-[#22C55E] text-white shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -232,10 +250,18 @@ export function ModuleGuide({ guideKey }: ModuleGuideProps) {
                   <Sparkles className="w-5 h-5 text-amber-200" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-sm sm:text-base truncate">
-                    {t.ai.modalTitle}
-                  </p>
-                  <p className="text-[11px] text-emerald-100 truncate">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-extrabold text-sm sm:text-base truncate">
+                      {t.ai.modalTitle}
+                    </p>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${roleBadgeStyle}`}
+                    >
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>{t.roles[userRole]}</span>
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-100 truncate mt-0.5">
                     {proxyUrl ? t.ai.modeProxy : t.ai.modeLocal}
                   </p>
                 </div>
@@ -379,8 +405,8 @@ export function ModuleGuide({ guideKey }: ModuleGuideProps) {
               </div>
             ) : (
               <>
-                {/* Quick Question Chips */}
-                <div className="px-3 py-2 bg-white/75 border-b border-[#DDF3E4] flex gap-1.5 flex-wrap shrink-0">
+                {/* Role-Scoped Quick Question Chips */}
+                <div className="px-3 py-2 bg-white/75 border-b border-[#DDF3E4] flex gap-1.5 flex-wrap max-h-24 overflow-y-auto shrink-0">
                   {quickQuestions.map((chip) => (
                     <button
                       key={chip.id}

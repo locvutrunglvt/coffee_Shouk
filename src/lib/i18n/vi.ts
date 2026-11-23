@@ -621,6 +621,12 @@ export const vi = {
     quickPromptPos: "Thu tiền, hủy đơn & QR bàn?",
     quickPromptPnl: "Chi phí & lãi/lỗ tháng này?",
     quickPromptGuide: "AI hướng dẫn màn hình này",
+    quickPromptBar: "Hàng chờ pha chế & món hết?",
+    quickPromptMenu: "Quản lý thực đơn, Size & QR bàn?",
+    quickPromptStockTake: "Kiểm kê & cân đối hao hụt kho?",
+    quickPromptRbac: "Phân quyền nhân viên & duyệt TK?",
+    quickPromptPwa: "Cài PWA & dùng khi mạng yếu?",
+    roleScopedNote: "Trả lời theo quyền",
   },
 };
 

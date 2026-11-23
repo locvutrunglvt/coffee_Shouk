@@ -623,5 +623,11 @@ export const en: Dictionary = {
     quickPromptPos: "Pay, cancel & table QR?",
     quickPromptPnl: "Expenses & monthly P&L?",
     quickPromptGuide: "AI guide for this page",
+    quickPromptBar: "Bar queue & sold-out drinks?",
+    quickPromptMenu: "Menu, sizes, recipes & table QR?",
+    quickPromptStockTake: "Stock-take & variance check?",
+    quickPromptRbac: "Staff roles & approvals?",
+    quickPromptPwa: "Install PWA & offline tips?",
+    roleScopedNote: "Scoped by role",
   },
 };
